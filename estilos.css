@@ -319,8 +319,15 @@ html[data-dispositivo="movil"] .aviso-flotante { bottom: calc(96px + env(safe-ar
 .selector-voz button + button { border-left: 2px solid var(--borde); }
 .selector-voz button[aria-checked="true"] { background: var(--acento); color: var(--acento-texto); }
 .selector-voz button[aria-checked="true"]::after { content: " ✓"; }
-html[data-dispositivo="movil"] .selector-voz { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; }
-html[data-dispositivo="movil"] .selector-voz button { min-height: 56px; font-size: 1rem; }
+.grupo-ajuste { display: inline-flex; align-items: center; gap: .4rem; }
+.etiqueta-ajuste { font-weight: 800; font-size: .85rem; color: var(--texto-suave); white-space: nowrap; }
+html[data-dispositivo="movil"] .grupo-ajuste { grid-column: 1 / -1; display: grid; gap: .3rem; }
+html[data-dispositivo="movil"] .selector-voz { display: grid; grid-template-columns: repeat(3, 1fr); }
+html[data-dispositivo="movil"] .selector-voz button { min-height: 56px; font-size: .95rem; padding: 0 .3rem; }
+/* En la computadora, los ajustes van en una segunda fila ordenada */
+html:not([data-dispositivo="movil"]) .ajustes {
+  display: flex; flex-wrap: wrap; gap: .5rem 1rem; width: 100%; justify-content: flex-end; align-items: center;
+}
 
 .cambiar-dispositivo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; justify-content: space-between; }
 .cambiar-dispositivo p { margin: 0; }

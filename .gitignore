@@ -1,1 +1,3 @@
 *.zip
+herramientas/node_modules/
+herramientas/package-lock.json

@@ -22,7 +22,7 @@
 
   /* ---------- ¿Teléfono o computadora? ---------- */
   const ua = navigator.userAgent;
-  const so = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'ios'
+  let so = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'ios'
     : /Android/i.test(ua) ? 'android' : 'otro';
   const pareceMovil = so !== 'otro' || (matchMedia('(pointer: coarse)').matches && innerWidth < 900);
   let preferencia = guardado.leer('dispositivo', 'auto'); // 'auto' | 'movil' | 'pc'
@@ -47,33 +47,40 @@
   const temas = ['auto', 'light', 'dark', 'contraste'];
   const nombresTema = { auto: 'Automático', light: 'Claro', dark: 'Oscuro', contraste: 'Alto contraste' };
   let tema = guardado.leer('tema', 'auto');
-  let vozLenta = guardado.leer('vozLenta', false);
-  let generoVoz = guardado.leer('generoVoz', 'mujer'); // 'mujer' | 'hombre'
+  // Voz: 'aparato' (la que trae el teléfono o la computadora), 'mujer' (Daniela) u 'hombre' (David)
+  let vozElegida = guardado.leer('voz', 'aparato');
+  let velocidad = guardado.leer('velocidad', guardado.leer('vozLenta', false) ? 'lenta' : 'normal');
+  const RITMO_APARATO = { lenta: 0.75, normal: 0.95, rapida: 1.3 };
+  const RITMO_AUDIO = { lenta: 0.8, normal: 1, rapida: 1.35 };
 
   function aplicarAjustes() {
     root.style.setProperty('--escala', escala);
     if (tema === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', tema);
     document.getElementById('btn-tema').title = 'Colores: ' + nombresTema[tema];
-    document.getElementById('btn-velocidad').setAttribute('aria-pressed', vozLenta ? 'true' : 'false');
-    document.querySelectorAll('.selector-voz button').forEach(b =>
-      b.setAttribute('aria-checked', b.dataset.genero === generoVoz ? 'true' : 'false'));
+    const actual = { voz: vozElegida, velocidad };
+    document.querySelectorAll('.selector-voz').forEach(grupo =>
+      grupo.querySelectorAll('button').forEach(b =>
+        b.setAttribute('aria-checked', b.dataset.valor === actual[grupo.dataset.ajuste] ? 'true' : 'false')));
   }
   document.getElementById('btn-mas').onclick = () => { escala = Math.min(1.6, +(escala + 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-menos').onclick = () => { escala = Math.max(0.8, +(escala - 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-tema').onclick = () => { tema = temas[(temas.indexOf(tema) + 1) % temas.length]; guardado.escribir('tema', tema); aplicarAjustes(); };
-  document.getElementById('btn-velocidad').onclick = () => { vozLenta = !vozLenta; guardado.escribir('vozLenta', vozLenta); aplicarAjustes(); };
-  document.querySelectorAll('.selector-voz button').forEach(b => {
+  document.querySelectorAll('.selector-voz[data-ajuste="voz"] button').forEach(b => {
     b.onclick = () => {
-      generoVoz = b.dataset.genero;
-      guardado.escribir('generoVoz', generoVoz); aplicarAjustes();
-      if (!hayVoz) return;
-      cargarVoces();
-      hablar(generoVoz === 'hombre' ? 'Hola. Ahora te leo con voz de hombre.' : 'Hola. Ahora te leo con voz de mujer.', null);
-      if (vozSimulada()) {
-        alertaSuave(generoVoz === 'hombre'
-          ? '👨 Este aparato no trae una voz de hombre en español, así que uso la voz que hay, pero más grave.'
-          : '👩 Este aparato no trae una voz de mujer en español, así que uso la voz que hay, pero más aguda.', 'info');
+      vozElegida = b.dataset.valor;
+      guardado.escribir('voz', vozElegida); aplicarAjustes();
+      if (vozElegida === 'aparato' && !hayVoz) {
+        alertaSuave('😕 Este aparato no puede leer en voz alta. Elige 👩 Daniela o 👨 David.', 'info');
+        return;
       }
+      hablar(FRASES_VOZ[vozElegida], null);
+    };
+  });
+  document.querySelectorAll('.selector-voz[data-ajuste="velocidad"] button').forEach(b => {
+    b.onclick = () => {
+      velocidad = b.dataset.valor;
+      guardado.escribir('velocidad', velocidad); aplicarAjustes();
+      reproductor.playbackRate = RITMO_AUDIO[velocidad]; // si está sonando un audio, cambia al tiro
     };
   });
   document.getElementById('btn-callar').onclick = () => callar();
@@ -93,38 +100,16 @@
   function cargarVoces() { if (hayVoz) voces = speechSynthesis.getVoices(); }
   if (hayVoz) { cargarVoces(); speechSynthesis.onvoiceschanged = cargarVoces; }
 
-  // Los navegadores no dicen si una voz es de hombre o de mujer: lo adivinamos por su nombre
-  // (Edge: Jorge, Dalia...; Windows: Raúl, Sabina...; iPhone: Juan, Paulina...).
-  const HOMBRES = /\b(jorge|[aá]lvaro|gonzalo|tom[aá]s|lorenzo|alonso|ra[uú]l|pablo|juan|diego|carlos|andr[eé]s|enrique|emilio|gerardo|alberto|federico|mateo|dar[ií]o|sa[uú]l|arnau|cecilio|luciano|yago|nil|male|hombre|masculin[oa])\b/i;
-  const MUJERES = /\b(dalia|elvira|salom[eé]|elena|catalina|paloma|sabina|helena|laura|paulina|m[oó]nica|marisol|isabel(a)?|ximena|larissa|abril|vera|irene|estrella|camila|valentina|renata|beatriz|candela|carlota|nuria|marina|female|mujer|femenin[oa]|google)\b/i;
-  function generoDe(v) {
-    const n = v.name.normalize('NFD').replace(/[̀-ͯ]/g, '');
-    if (HOMBRES.test(n) || HOMBRES.test(v.name)) return 'hombre';
-    if (MUJERES.test(n) || MUJERES.test(v.name)) return 'mujer';
-    return null;
-  }
-
-  // Si no existe una voz real del tipo elegido, la imitamos cambiando el tono
-  function vozSimulada() {
-    const v = elegirVoz();
-    // Las voces sin nombre conocido (como la de Android) casi siempre son de mujer
-    return !!v && (generoDe(v) || 'mujer') !== generoVoz;
-  }
-  function tonoVoz() {
-    if (!vozSimulada()) return 1;
-    return generoVoz === 'hombre' ? 0.65 : 1.3;
-  }
-
   function elegirVoz() {
-    const todas = voces.filter(v => /^es/i.test(v.lang));
-    const delGenero = todas.filter(v => generoDe(v) === generoVoz);
-    const es = delGenero.length ? delGenero : todas;
+    const es = voces.filter(v => /^es/i.test(v.lang));
     // Preferimos voces latinoamericanas y "naturales" (Edge tiene muy buenas)
     return es.find(v => /natural|online/i.test(v.name) && /(MX|US|419|AR|CO|CL)/i.test(v.lang))
       || es.find(v => /(MX|US|419|AR|CO|CL)/i.test(v.lang))
       || es.find(v => /natural|online/i.test(v.name))
       || es[0] || null;
   }
+  // Texto que se lee de un cuadro. Le ponemos un punto al final de títulos y de cada punto
+  // de una lista, para que la voz haga una pausa.
   function limpiarTexto(el) {
     const copia = el.cloneNode(true);
     // No leemos lo que está escondido (instrucciones del otro aparato)
@@ -132,13 +117,44 @@
     if (so === 'ios') ocultos.push('.solo-android');
     if (so === 'android') ocultos.push('.solo-ios');
     copia.querySelectorAll(ocultos.join(',')).forEach(n => n.remove());
-    return copia.innerText
+    [...copia.querySelectorAll('h1,h2,h3,p,li,td,th,dt,dd,.titulo-caja,.etq,a.video,.texto-prompt')].reverse().forEach(n => {
+      const t = n.textContent.replace(/[\p{Extended_Pictographic}\u{FE0F}\s]+$/gu, '');
+      n.append(t && !/[.!?:;,]$/.test(t) ? '. ' : ' ');
+    });
+    return copia.textContent
       .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
-      .replace(/⊞/g, '')
-      .replace(/\s+\n/g, '\n')
+      .replace(/[⊞↵⇧⌫←⬅➡]/g, '')
+      .replace(/→/g, ', ')
+      .replace(/\s+/g, ' ')
+      .replace(/\s+([.,:;!?])/g, '$1')
+      .replace(/([.!?:;,])(\s*[.,])+/g, '$1')
       .trim();
   }
+  function textoDeHtml(html) {
+    const d = document.createElement('div'); d.innerHTML = html; return limpiarTexto(d);
+  }
+
+  /* Audios ya grabados (carpeta audio/). Si un texto no tiene audio, lo lee la voz del aparato. */
+  const AUDIOS = window.CURSO_AUDIOS || {};
+  const FRASES_VOZ = {
+    aparato: 'Hola. Ahora te leo con la voz de este aparato.',
+    mujer: 'Hola, soy Daniela. Ahora te leo yo.',
+    hombre: 'Hola, soy David. Ahora te leo yo.',
+  };
+  // Huella corta de un texto (FNV-1a): el nombre del archivo de audio. Igual que en herramientas/grabar-audios.js
+  function huella(t) {
+    t = t.replace(/\s+/g, ' ').trim();
+    let h = 0x811c9dc5;
+    for (const c of t) { h ^= c.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+    return h.toString(16).padStart(8, '0');
+  }
+  const tieneAudio = (t) => vozElegida !== 'aparato' && (AUDIOS[vozElegida] || []).includes(huella(t));
+  const reproductor = new Audio();
+  let turno = 0; // cambia cada vez que se detiene la voz, para cortar lo que estaba sonando
+
   function callar() {
+    turno++;
+    reproductor.pause();
     if (hayVoz) speechSynthesis.cancel();
     if (botonHablando) {
       botonHablando.classList.remove('hablando');
@@ -148,15 +164,39 @@
     }
     botonHablando = null;
   }
-  function hablar(texto, boton) {
-    if (!hayVoz) { alertaSuave('Tu navegador no puede leer en voz alta. Prueba con Microsoft Edge o Google Chrome.'); return; }
+  function tocarAudio(texto) {
+    return new Promise((listo) => {
+      reproductor.src = 'audio/' + vozElegida + '/' + huella(texto) + '.mp3';
+      reproductor.playbackRate = RITMO_AUDIO[velocidad];
+      reproductor.onended = () => listo(true);
+      reproductor.onerror = () => listo(false);
+      reproductor.play().catch(() => listo(false));
+    });
+  }
+  function decirConVozDelAparato(texto, mio) {
+    return new Promise((listo) => {
+      if (!hayVoz) { alertaSuave('Tu navegador no puede leer en voz alta. Prueba con Microsoft Edge o Google Chrome.'); return listo(); }
+      // Partimos el texto en frases: los navegadores cortan textos muy largos
+      const frases = texto.split(/(?<=[.!?:;])\s+|\n+/).map(f => f.trim()).filter(Boolean);
+      if (!frases.length) return listo();
+      cargarVoces();
+      const voz = elegirVoz();
+      frases.forEach((f, i) => {
+        const u = new SpeechSynthesisUtterance(f);
+        u.lang = voz ? voz.lang : 'es-MX';
+        if (voz) u.voice = voz;
+        u.rate = RITMO_APARATO[velocidad];
+        if (i === frases.length - 1) { u.onend = () => listo(); u.onerror = () => listo(); }
+        if (turno === mio) speechSynthesis.speak(u);
+      });
+    });
+  }
+  // partes: un texto o una lista de textos que se leen uno tras otro
+  async function hablar(partes, boton) {
     const mismo = boton && boton === botonHablando;
     callar();
     if (mismo) return; // segundo toque = detener
-    // Partimos el texto en frases: los navegadores cortan textos muy largos
-    const frases = texto.split(/(?<=[.!?:;])\s+|\n+/).map(f => f.trim()).filter(Boolean);
-    const voz = elegirVoz();
-    const tono = tonoVoz();
+    const mio = turno;
     botonHablando = boton || null;
     if (boton) {
       boton.dataset.original = boton.textContent;
@@ -164,15 +204,35 @@
       boton.textContent = boton.classList.contains('escuchar') ? '⏹' : '⏹ Detener lectura';
       boton.setAttribute('aria-label', 'Detener');
     }
-    frases.forEach((f, i) => {
-      const u = new SpeechSynthesisUtterance(f);
-      u.lang = voz ? voz.lang : 'es-MX';
-      if (voz) u.voice = voz;
-      u.rate = vozLenta ? 0.75 : 0.95;
-      u.pitch = tono;
-      if (i === frases.length - 1) u.onend = () => { if (botonHablando === boton) callar(); };
-      speechSynthesis.speak(u);
-    });
+    for (const parte of [].concat(partes)) {
+      if (turno !== mio) return;
+      const sono = tieneAudio(parte) && await tocarAudio(parte);
+      if (turno !== mio) return;
+      if (!sono) await decirConVozDelAparato(parte, mio);
+    }
+    if (turno === mio) callar();
+  }
+
+  const textoIntro = (l) => textoDeHtml(`<h1>${l.titulo}</h1><p>Vas a aprender:</p><ul>${l.aprenderas.map(a => `<li>${a}</li>`).join('')}</ul>`);
+
+  // Todos los textos que se pueden leer en voz alta, en las versiones de computadora,
+  // Android e iPhone. Lo usa herramientas/grabar-audios.js (abriendo el curso en #/textos).
+  function todosLosTextos() {
+    const textos = new Set([FRASES_VOZ.mujer, FRASES_VOZ.hombre]);
+    textos.add('¡Muy bien! Lección completada. ¡Sigue así!');
+    textos.add('¡Felicitaciones! ¡Terminaste todo el curso!');
+    const antes = [preferencia, so];
+    for (const [pref, sist] of [['pc', 'otro'], ['movil', 'android'], ['movil', 'ios']]) {
+      preferencia = pref; so = sist; aplicarDispositivo();
+      const vistas = [vistaInicio, vistaDiccionario, vistaFrases, vistaGuia, ...L.map((_, i) => () => vistaLeccion(i))];
+      vistas.forEach((v, i) => {
+        v();
+        if (i >= 4) textos.add(textoIntro(L[i - 4]));
+        main.querySelectorAll('.bloque').forEach(b => textos.add(limpiarTexto(b)));
+      });
+    }
+    [preferencia, so] = antes; aplicarDispositivo();
+    return [...textos].filter(Boolean);
   }
 
   /* ---------- Copiar al portapapeles ---------- */
@@ -302,7 +362,7 @@
 
       <h2>🧭 Cómo usar este curso</h2>
       <div class="instrucciones">
-        <div class="instr"><span class="ico">🔊</span><p>Toca <strong>🔊</strong> en cualquier cuadro para <strong>escucharlo</strong>. ${esMovil() ? 'En <strong>⚙️</strong>' : 'Arriba'} puedes elegir <strong>voz de mujer 👩 o de hombre 👨</strong>.</p></div>
+        <div class="instr"><span class="ico">🔊</span><p>Toca <strong>🔊</strong> en cualquier cuadro para <strong>escucharlo</strong>. ${esMovil() ? 'En <strong>⚙️</strong>' : 'Arriba'} puedes elegir <strong>quién te lee</strong> (la voz del aparato, 👩 Daniela o 👨 David) y la <strong>velocidad</strong>.</p></div>
         <div class="instr"><span class="ico">🚀</span><p>Los botones <strong>"Abrir en Claude"</strong> escriben las frases por ti.</p></div>
         <div class="instr"><span class="ico">🔠</span><p>${esMovil() ? 'Toca <strong>⚙️</strong> arriba para agrandar la letra y cambiar los colores.' : 'Usa <strong>A+</strong> y <strong>A−</strong> arriba para cambiar el tamaño de la letra.'}</p></div>
         <div class="instr"><span class="ico">🐢</span><p>Ve a tu ritmo. <strong>Una lección por día</strong> está perfecto.</p></div>
@@ -383,9 +443,9 @@
 
     const leer = document.getElementById('leer-todo');
     leer.onclick = () => {
-      const partes = [l.titulo, 'Vas a aprender: ' + l.aprenderas.join('. ')];
+      const partes = [textoIntro(l)];
       main.querySelectorAll('#cuerpo .bloque').forEach(b => partes.push(limpiarTexto(b)));
-      hablar(partes.join('.\n'), leer);
+      hablar(partes, leer);
     };
 
     document.getElementById('logrado').onclick = () => {
@@ -470,6 +530,11 @@
     else if (h === 'diccionario') vistaDiccionario();
     else if (h === 'frases') vistaFrases();
     else if (h === 'guia') vistaGuia();
+    else if (h === 'textos') { // solo para herramientas/grabar-audios.js
+      const textos = todosLosTextos();
+      main.innerHTML = '<pre id="textos-json"></pre>';
+      document.getElementById('textos-json').textContent = JSON.stringify(textos.map(t => ({ huella: huella(t), texto: t })));
+    }
     else vistaInicio();
     window.scrollTo(0, 0);
     main.focus({ preventScroll: true });

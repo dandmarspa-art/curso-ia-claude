@@ -40,6 +40,14 @@ Todo el texto del curso está en **`lecciones.js`**. Ábrelo con el Bloc de nota
 - `estilos.css` → colores y tamaños.
 - `app.js` → funcionamiento (botones, voz, progreso).
 
+## 🔊 Audios (voz de mujer y de hombre)
+
+Todo lo que el curso lee en voz alta está **grabado** en la carpeta `audio/` (una carpeta por voz), así suena igual en cualquier computadora o teléfono, también sin internet.
+Las voces son de [Piper](https://github.com/rhasspy/piper), gratis y de código abierto.
+
+Si cambias un texto en `lecciones.js`, ese cuadro se leerá con la voz del aparato hasta que se vuelva a grabar.
+Para regrabar solo lo que cambió, sigue las instrucciones al inicio de `herramientas/grabar-audios.js` (o pídeselo a Claude Code).
+
 ## 📝 Nota
 
 Claude y las herramientas de IA cambian seguido: algunos botones o nombres pueden verse distintos. Los videos son búsquedas de YouTube para que siempre aparezcan videos actuales.

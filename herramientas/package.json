@@ -1,0 +1,5 @@
+{
+  "name": "herramientas-curso",
+  "private": true,
+  "dependencies": { "lamejs": "1.2.1" }
+}

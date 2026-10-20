@@ -29,10 +29,21 @@
       <button class="boton-barra" id="btn-menos" title="Letra más pequeña" aria-label="Letra más pequeña">A− <span class="txt">Letra</span></button>
       <button class="boton-barra" id="btn-mas" title="Letra más grande" aria-label="Letra más grande">A+ <span class="txt">Letra</span></button>
       <button class="boton-barra" id="btn-tema" title="Cambiar colores" aria-label="Cambiar colores">🌓 <span class="txt">Colores</span></button>
-      <button class="boton-barra" id="btn-velocidad" title="Velocidad de la voz" aria-label="Velocidad de la voz">🐢 <span class="txt">Voz lenta</span></button>
-      <div class="selector-voz" role="radiogroup" aria-label="Voz que lee el curso">
-        <button type="button" role="radio" data-genero="mujer" aria-checked="true" title="Leer con voz de mujer">👩 Mujer</button>
-        <button type="button" role="radio" data-genero="hombre" aria-checked="false" title="Leer con voz de hombre">👨 Hombre</button>
+      <div class="grupo-ajuste">
+        <span class="etiqueta-ajuste" id="etq-voz">🗣️ Voz:</span>
+        <div class="selector-voz" role="radiogroup" aria-labelledby="etq-voz" data-ajuste="voz">
+          <button type="button" role="radio" data-valor="aparato" title="La voz que trae este aparato">🔊 Aparato</button>
+          <button type="button" role="radio" data-valor="mujer" title="Voz grabada de mujer">👩 Daniela</button>
+          <button type="button" role="radio" data-valor="hombre" title="Voz grabada de hombre">👨 David</button>
+        </div>
+      </div>
+      <div class="grupo-ajuste">
+        <span class="etiqueta-ajuste" id="etq-velocidad">⏱️ Velocidad:</span>
+        <div class="selector-voz" role="radiogroup" aria-labelledby="etq-velocidad" data-ajuste="velocidad">
+          <button type="button" role="radio" data-valor="lenta">🐢 Lenta</button>
+          <button type="button" role="radio" data-valor="normal">▶️ Normal</button>
+          <button type="button" role="radio" data-valor="rapida">🐇 Rápida</button>
+        </div>
       </div>
     </div>
   </header>
@@ -40,6 +51,7 @@
   <main id="contenido" tabindex="-1"></main>
 
   <script src="lecciones.js"></script>
+  <script src="audios.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
