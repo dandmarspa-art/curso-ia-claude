@@ -48,17 +48,35 @@
   const nombresTema = { auto: 'Automático', light: 'Claro', dark: 'Oscuro', contraste: 'Alto contraste' };
   let tema = guardado.leer('tema', 'auto');
   let vozLenta = guardado.leer('vozLenta', false);
+  let generoVoz = guardado.leer('generoVoz', 'mujer'); // 'mujer' | 'hombre'
 
   function aplicarAjustes() {
     root.style.setProperty('--escala', escala);
     if (tema === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', tema);
     document.getElementById('btn-tema').title = 'Colores: ' + nombresTema[tema];
     document.getElementById('btn-velocidad').setAttribute('aria-pressed', vozLenta ? 'true' : 'false');
+    const g = document.getElementById('btn-genero');
+    g.innerHTML = generoVoz === 'hombre' ? '👨 <span class="txt">Voz de hombre</span>' : '👩 <span class="txt">Voz de mujer</span>';
+    g.setAttribute('aria-label', generoVoz === 'hombre' ? 'Voz de hombre. Tocar para cambiar a voz de mujer' : 'Voz de mujer. Tocar para cambiar a voz de hombre');
   }
   document.getElementById('btn-mas').onclick = () => { escala = Math.min(1.6, +(escala + 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-menos').onclick = () => { escala = Math.max(0.8, +(escala - 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-tema').onclick = () => { tema = temas[(temas.indexOf(tema) + 1) % temas.length]; guardado.escribir('tema', tema); aplicarAjustes(); };
   document.getElementById('btn-velocidad').onclick = () => { vozLenta = !vozLenta; guardado.escribir('vozLenta', vozLenta); aplicarAjustes(); };
+  document.getElementById('btn-genero').onclick = () => {
+    generoVoz = generoVoz === 'mujer' ? 'hombre' : 'mujer';
+    guardado.escribir('generoVoz', generoVoz); aplicarAjustes();
+    if (!hayVoz) return;
+    cargarVoces();
+    const v = elegirVoz();
+    if (v && generoDe(v) === generoVoz) {
+      hablar(generoVoz === 'hombre' ? 'Hola. Ahora te leo con voz de hombre.' : 'Hola. Ahora te leo con voz de mujer.', null);
+    } else {
+      alertaSuave(generoVoz === 'hombre'
+        ? '😕 Este aparato no tiene una voz de hombre en español. Se usará la voz que haya. (En la computadora, Microsoft Edge tiene voces de hombre y de mujer.)'
+        : '😕 Este aparato no tiene una voz de mujer en español. Se usará la voz que haya.');
+    }
+  };
   document.getElementById('btn-callar').onclick = () => callar();
   document.getElementById('btn-inicio').onclick = () => { location.hash = '#/'; };
   const btnAjustes = document.getElementById('btn-ajustes');
@@ -76,8 +94,21 @@
   function cargarVoces() { if (hayVoz) voces = speechSynthesis.getVoices(); }
   if (hayVoz) { cargarVoces(); speechSynthesis.onvoiceschanged = cargarVoces; }
 
+  // Los navegadores no dicen si una voz es de hombre o de mujer: lo adivinamos por su nombre
+  // (Edge: Jorge, Dalia...; Windows: Raúl, Sabina...; iPhone: Juan, Paulina...).
+  const HOMBRES = /\b(jorge|[aá]lvaro|gonzalo|tom[aá]s|lorenzo|alonso|ra[uú]l|pablo|juan|diego|carlos|andr[eé]s|enrique|emilio|gerardo|alberto|federico|mateo|dar[ií]o|sa[uú]l|arnau|cecilio|luciano|yago|nil|male|hombre|masculin[oa])\b/i;
+  const MUJERES = /\b(dalia|elvira|salom[eé]|elena|catalina|paloma|sabina|helena|laura|paulina|m[oó]nica|marisol|isabel(a)?|ximena|larissa|abril|vera|irene|estrella|camila|valentina|renata|beatriz|candela|carlota|nuria|marina|female|mujer|femenin[oa]|google)\b/i;
+  function generoDe(v) {
+    const n = v.name.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (HOMBRES.test(n) || HOMBRES.test(v.name)) return 'hombre';
+    if (MUJERES.test(n) || MUJERES.test(v.name)) return 'mujer';
+    return null;
+  }
+
   function elegirVoz() {
-    const es = voces.filter(v => /^es/i.test(v.lang));
+    const todas = voces.filter(v => /^es/i.test(v.lang));
+    const delGenero = todas.filter(v => generoDe(v) === generoVoz);
+    const es = delGenero.length ? delGenero : todas;
     // Preferimos voces latinoamericanas y "naturales" (Edge tiene muy buenas)
     return es.find(v => /natural|online/i.test(v.name) && /(MX|US|419|AR|CO|CL)/i.test(v.lang))
       || es.find(v => /(MX|US|419|AR|CO|CL)/i.test(v.lang))
@@ -259,7 +290,7 @@
 
       <h2>🧭 Cómo usar este curso</h2>
       <div class="instrucciones">
-        <div class="instr"><span class="ico">🔊</span><p>Toca <strong>🔊</strong> en cualquier cuadro para <strong>escucharlo</strong>.</p></div>
+        <div class="instr"><span class="ico">🔊</span><p>Toca <strong>🔊</strong> en cualquier cuadro para <strong>escucharlo</strong>. ${esMovil() ? 'En <strong>⚙️</strong>' : 'Arriba'} puedes elegir <strong>voz de mujer 👩 o de hombre 👨</strong>.</p></div>
         <div class="instr"><span class="ico">🚀</span><p>Los botones <strong>"Abrir en Claude"</strong> escriben las frases por ti.</p></div>
         <div class="instr"><span class="ico">🔠</span><p>${esMovil() ? 'Toca <strong>⚙️</strong> arriba para agrandar la letra y cambiar los colores.' : 'Usa <strong>A+</strong> y <strong>A−</strong> arriba para cambiar el tamaño de la letra.'}</p></div>
         <div class="instr"><span class="ico">🐢</span><p>Ve a tu ritmo. <strong>Una lección por día</strong> está perfecto.</p></div>

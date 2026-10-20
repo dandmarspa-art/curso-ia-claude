@@ -1,6 +1,6 @@
 /* Guarda el curso en el teléfono para que funcione sin internet.
    Siempre intenta traer la versión nueva; si no hay internet, usa la guardada. */
-const CACHE = 'curso-ia-v1';
+const CACHE = 'curso-ia-v2';
 const ARCHIVOS = ['./', 'index.html', 'estilos.css', 'app.js', 'lecciones.js', 'manifest.webmanifest', 'icono-512.png'];
 
 self.addEventListener('install', (e) => {

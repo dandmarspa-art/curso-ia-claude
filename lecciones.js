@@ -1308,6 +1308,7 @@ window.CURSO.guia = `
       <li><strong>Claude dice que se acabaron los mensajes:</strong> es el límite del plan gratis. Esperar unas horas.</li>
       <li><strong>El botón "Abrir en Claude" abre vacío:</strong> usar "Copiar" y pegar con Ctrl + V.</li>
       <li><strong>El botón 🔊 no habla:</strong> probar en Microsoft Edge (tiene muy buenas voces en español) o revisar el volumen. En el teléfono: quitar el modo silencio y revisar que haya una voz en español instalada (Ajustes → "texto a voz" o "contenido hablado").</li>
+      <li><strong>No aparece la voz de hombre (o de mujer):</strong> depende de las voces que tenga instalado el aparato. En la computadora, Microsoft Edge trae voces de hombre y de mujer en español. En iPhone se pueden bajar más voces en Ajustes → Accesibilidad → Contenido leído → Voces → Español.</li>
       <li><strong>En el teléfono, "Abrir en Claude" abre la app sin la frase:</strong> es normal; la frase ya quedó copiada, solo hay que pegarla.</li>
       <li><strong>Algo de Claude se ve distinto al curso:</strong> Claude se actualiza seguido. Pregúntenle a Claude dónde está esa opción.</li>
     </ul>
