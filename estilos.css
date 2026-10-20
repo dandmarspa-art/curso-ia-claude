@@ -79,6 +79,14 @@ kbd {
 .saltar { position: absolute; left: -9999px; }
 .saltar:focus { left: 16px; top: 16px; z-index: 100; background: var(--acento); color: var(--acento-texto); padding: .6em 1em; border-radius: 10px; }
 
+/* ===== Logo (arriba de todo) ===== */
+.logo-curso { display: flex; justify-content: center; padding: 14px 16px 10px; background: var(--fondo); }
+.logo-caja { display: inline-block; border-radius: 16px; line-height: 0; }
+.logo-curso img { display: block; width: min(373px, 80vw); height: auto; }
+/* En modo oscuro y alto contraste el logo va sobre un recuadro claro, para que "cursos" se lea */
+:root[data-theme="dark"] .logo-caja, :root[data-theme="contraste"] .logo-caja { background: #f8f7f3; padding: 10px 16px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo-caja { background: #f8f7f3; padding: 10px 16px; } }
+
 /* ===== Barra superior ===== */
 .barra {
   position: sticky; top: 0; z-index: 20;

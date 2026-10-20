@@ -1,8 +1,8 @@
 /* Guarda el curso en el teléfono para que funcione sin internet.
    Siempre intenta traer la versión nueva; si no hay internet, usa la guardada.
    Los audios se guardan a medida que se escuchan. */
-const CACHE = 'curso-ia-v5';
-const ARCHIVOS = ['./', 'index.html', 'estilos.css', 'app.js', 'lecciones.js', 'audios.js', 'manifest.webmanifest', 'icono-512.png'];
+const CACHE = 'curso-ia-v6';
+const ARCHIVOS = ['./', 'index.html', 'estilos.css', 'app.js', 'lecciones.js', 'audios.js', 'manifest.webmanifest', 'icono-512.png', 'logo.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
