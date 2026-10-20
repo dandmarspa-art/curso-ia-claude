@@ -18,6 +18,11 @@ Abre el link de GitHub Pages del curso en Chrome o Edge y guárdalo en favoritos
 
 > Sin internet, el curso se ve y funciona igual. Los videos y Claude sí necesitan internet.
 
+### Opción 3: en el teléfono 📱
+Abre el link de GitHub Pages en Chrome (Android) o Safari (iPhone). El curso **detecta que es un teléfono** y cambia las instrucciones: micrófono del teclado en vez de Windows + H, capturas de pantalla con una mano, menús de la app de Claude, etc.
+En la portada explica cómo **ponerlo en la pantalla de inicio** como una app; así también funciona sin internet.
+Si la detección se equivoca, abajo en la portada hay un botón para cambiar entre versión teléfono y computadora.
+
 ## ✨ Qué tiene
 
 - **11 lecciones** (nivel 0 → nivel 100): qué es la IA, dictado por voz, cuenta de Claude, primeras conversaciones, cómo pedir bien las cosas, fotos y documentos, artefactos, **diseño gráfico con IA**, proyectos y modo voz, Claude Code / Claude Design, seguridad y diploma.

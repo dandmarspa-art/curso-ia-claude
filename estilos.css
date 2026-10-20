@@ -51,6 +51,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { font-size: calc(20px * var(--escala)); scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
@@ -271,6 +272,40 @@ textarea.practica:focus { border-color: var(--acento); outline: none; }
 .navegacion { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-top: 1.5rem; }
 .navegacion .boton { font-size: 1rem; }
 .pista-teclas { text-align: center; color: var(--texto-suave); font-size: .85rem; margin-top: .8rem; }
+
+/* ===== Computadora / teléfono ===== */
+html:not([data-dispositivo="movil"]) .solo-movil { display: none !important; }
+html[data-dispositivo="movil"] .solo-pc { display: none !important; }
+html[data-so="android"] .solo-ios, html[data-so="ios"] .solo-android { display: none !important; }
+
+.ajustes { display: contents; }
+#btn-ajustes { display: none; }
+html[data-dispositivo="movil"] { font-size: calc(19px * var(--escala)); }
+html[data-dispositivo="movil"] h1 { font-size: 1.7rem; }
+html[data-dispositivo="movil"] .barra { padding: .4rem 12px; }
+html[data-dispositivo="movil"] .barra .marca { font-size: .95rem; }
+html[data-dispositivo="movil"] .barra > .boton-barra .txt { display: none; }
+html[data-dispositivo="movil"] #btn-ajustes { display: inline-flex; }
+html[data-dispositivo="movil"] .ajustes { display: none; }
+html[data-dispositivo="movil"] .ajustes.abierto {
+  display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; width: 100%; padding: .3rem 0 .2rem;
+}
+html[data-dispositivo="movil"] .ajustes .boton-barra { min-height: 56px; font-size: 1rem; }
+html[data-dispositivo="movil"] .ajustes .txt { display: inline; }
+
+/* Botones Anterior / Siguiente siempre a mano (abajo, para el pulgar) */
+html[data-dispositivo="movil"] .navegacion {
+  position: sticky; bottom: 0; z-index: 15;
+  margin: 1rem -16px 0; padding: .6rem 16px calc(.6rem + env(safe-area-inset-bottom));
+  background: var(--fondo); border-top: 2px solid var(--borde);
+}
+html[data-dispositivo="movil"] .navegacion .boton { min-height: 60px; padding: .4rem .6rem; }
+html[data-dispositivo="movil"] main { padding-bottom: 2rem; }
+html[data-dispositivo="movil"] .bloque { padding: 1.2rem 1rem; border-radius: 20px; }
+html[data-dispositivo="movil"] .prompt .boton { flex: 1 1 100%; }
+
+.cambiar-dispositivo { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; justify-content: space-between; }
+.cambiar-dispositivo p { margin: 0; }
 
 /* Teclas grandes ilustradas */
 .teclas { display: flex; align-items: center; justify-content: center; gap: .8rem; flex-wrap: wrap; margin: 1rem 0; font-size: 1.4rem; font-weight: 800; }

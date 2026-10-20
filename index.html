@@ -10,6 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilos.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icono-512.png">
+  <meta name="theme-color" content="#c4572e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Curso IA">
 </head>
 <body>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -17,11 +23,14 @@
   <header class="barra" role="banner">
     <a class="marca" href="#/"><span class="logo" aria-hidden="true">🎙️</span> Aprende IA con Claude</a>
     <button class="boton-barra" id="btn-inicio" title="Volver al mapa del curso" aria-label="Volver al inicio">🏠 <span class="txt">Inicio</span></button>
-    <button class="boton-barra" id="btn-menos" title="Letra más pequeña" aria-label="Letra más pequeña">A−</button>
-    <button class="boton-barra" id="btn-mas" title="Letra más grande" aria-label="Letra más grande">A+</button>
-    <button class="boton-barra" id="btn-tema" title="Cambiar colores" aria-label="Cambiar colores">🌓 <span class="txt">Colores</span></button>
-    <button class="boton-barra" id="btn-velocidad" title="Velocidad de la voz" aria-label="Velocidad de la voz">🐢 <span class="txt">Voz lenta</span></button>
+    <button class="boton-barra" id="btn-ajustes" title="Ajustes" aria-label="Ajustes" aria-expanded="false" aria-controls="ajustes">⚙️</button>
     <button class="boton-barra" id="btn-callar" title="Detener la voz" aria-label="Detener la voz">⏹️ <span class="txt">Callar</span></button>
+    <div class="ajustes" id="ajustes">
+      <button class="boton-barra" id="btn-menos" title="Letra más pequeña" aria-label="Letra más pequeña">A− <span class="txt">Letra</span></button>
+      <button class="boton-barra" id="btn-mas" title="Letra más grande" aria-label="Letra más grande">A+ <span class="txt">Letra</span></button>
+      <button class="boton-barra" id="btn-tema" title="Cambiar colores" aria-label="Cambiar colores">🌓 <span class="txt">Colores</span></button>
+      <button class="boton-barra" id="btn-velocidad" title="Velocidad de la voz" aria-label="Velocidad de la voz">🐢 <span class="txt">Voz lenta</span></button>
+    </div>
   </header>
 
   <main id="contenido" tabindex="-1"></main>

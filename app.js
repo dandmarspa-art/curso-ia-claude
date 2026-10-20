@@ -20,6 +20,28 @@
   const hechas = () => guardado.leer('hechas', []);
   const marcarHecha = (i) => { const h = hechas(); if (!h.includes(i)) { h.push(i); guardado.escribir('hechas', h); } };
 
+  /* ---------- ¿Teléfono o computadora? ---------- */
+  const ua = navigator.userAgent;
+  const so = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'ios'
+    : /Android/i.test(ua) ? 'android' : 'otro';
+  const pareceMovil = so !== 'otro' || (matchMedia('(pointer: coarse)').matches && innerWidth < 900);
+  let preferencia = guardado.leer('dispositivo', 'auto'); // 'auto' | 'movil' | 'pc'
+  const esMovil = () => preferencia === 'movil' || (preferencia === 'auto' && pareceMovil);
+  function aplicarDispositivo() {
+    root.setAttribute('data-dispositivo', esMovil() ? 'movil' : 'pc');
+    root.setAttribute('data-so', so);
+  }
+  aplicarDispositivo();
+  const enApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let avisoInstalar = null; // Android/Chrome: permite mostrar un botón "Instalar"
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); avisoInstalar = e;
+    const b = document.getElementById('btn-instalar'); if (b) b.hidden = false;
+  });
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* sin modo sin conexión */ });
+  }
+
   /* ---------- Ajustes: tamaño de letra, colores, voz ---------- */
   let escala = guardado.leer('escala', 1);
   const temas = ['auto', 'light', 'dark', 'contraste'];
@@ -39,6 +61,12 @@
   document.getElementById('btn-velocidad').onclick = () => { vozLenta = !vozLenta; guardado.escribir('vozLenta', vozLenta); aplicarAjustes(); };
   document.getElementById('btn-callar').onclick = () => callar();
   document.getElementById('btn-inicio').onclick = () => { location.hash = '#/'; };
+  const btnAjustes = document.getElementById('btn-ajustes');
+  btnAjustes.onclick = () => {
+    const panel = document.getElementById('ajustes');
+    const abierto = panel.classList.toggle('abierto');
+    btnAjustes.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+  };
   aplicarAjustes();
 
   /* ---------- Leer en voz alta ---------- */
@@ -58,7 +86,11 @@
   }
   function limpiarTexto(el) {
     const copia = el.cloneNode(true);
-    copia.querySelectorAll('button, .escuchar, .no-leer, textarea, input, .botones').forEach(n => n.remove());
+    // No leemos lo que está escondido (instrucciones del otro aparato)
+    const ocultos = ['button', '.escuchar', '.no-leer', 'textarea', 'input', '.botones', esMovil() ? '.solo-pc' : '.solo-movil'];
+    if (so === 'ios') ocultos.push('.solo-android');
+    if (so === 'android') ocultos.push('.solo-ios');
+    copia.querySelectorAll(ocultos.join(',')).forEach(n => n.remove());
     return copia.innerText
       .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
       .replace(/⊞/g, '')
@@ -153,12 +185,13 @@
       abrir.className = 'boton'; abrir.target = '_blank'; abrir.rel = 'noopener';
       abrir.href = 'https://claude.ai/new?q=' + encodeURIComponent(texto);
       abrir.innerHTML = '🚀 Abrir en Claude';
-      abrir.onclick = () => { copiar(texto); aviso.textContent = '✅ Se abrió Claude. Si la frase no aparece, pégala con Ctrl + V.'; };
+      const comoPegar = () => esMovil() ? 'deja el dedo apretado en la caja de Claude y toca "Pegar"' : 'pega con Ctrl + V';
+      abrir.onclick = () => { copiar(texto); aviso.textContent = '✅ Se abrió Claude. Si la frase no aparece, ' + comoPegar() + '.'; };
       const cp = document.createElement('button');
       cp.className = 'boton secundario'; cp.type = 'button'; cp.innerHTML = '📋 Copiar';
       cp.onclick = async () => {
         const ok = await copiar(texto);
-        aviso.textContent = ok ? '✅ ¡Copiado! Ahora ve a Claude y pega con Ctrl + V.' : '😕 No se pudo copiar. Usa el botón "Abrir en Claude".';
+        aviso.textContent = ok ? '✅ ¡Copiado! Ahora ve a Claude y ' + comoPegar() + '.' : '😕 No se pudo copiar. Usa el botón "Abrir en Claude".';
       };
       botones.append(abrir, cp);
       p.append(t, botones, aviso);
@@ -206,11 +239,29 @@
         </div>
       </section>
 
+      ${esMovil() && !enApp ? `
+      <section class="bloque">
+        <h2>📲 Pon el curso en tu teléfono, como una app</h2>
+        <p>Así lo abres con un toque, <strong>sin buscar el link</strong>, y funciona aunque no tengas internet.</p>
+        <button class="boton ancho" id="btn-instalar" type="button" ${avisoInstalar ? '' : 'hidden'}>📲 Instalar el curso</button>
+        <div class="pasos solo-android"><ol>
+          <li>Toca los <strong>3 puntitos ⋮</strong> arriba a la derecha de Chrome.</li>
+          <li>Toca <strong>"Agregar a la pantalla principal"</strong> o <strong>"Instalar app"</strong>.</li>
+          <li>Toca <strong>"Agregar"</strong> o <strong>"Instalar"</strong>. ¡Listo! Busca el ícono 🎙️ en tu teléfono.</li>
+        </ol></div>
+        <div class="pasos solo-ios"><ol>
+          <li>Abre este curso en <strong>Safari</strong>.</li>
+          <li>Toca el botón <strong>Compartir</strong> (un cuadrado con una flecha hacia arriba ⬆️).</li>
+          <li>Baja y toca <strong>"Agregar a inicio"</strong>.</li>
+          <li>Toca <strong>"Agregar"</strong>. ¡Listo! Busca el ícono 🎙️ en tu teléfono.</li>
+        </ol></div>
+      </section>` : ''}
+
       <h2>🧭 Cómo usar este curso</h2>
       <div class="instrucciones">
         <div class="instr"><span class="ico">🔊</span><p>Toca <strong>🔊</strong> en cualquier cuadro para <strong>escucharlo</strong>.</p></div>
         <div class="instr"><span class="ico">🚀</span><p>Los botones <strong>"Abrir en Claude"</strong> escriben las frases por ti.</p></div>
-        <div class="instr"><span class="ico">🔠</span><p>Usa <strong>A+</strong> y <strong>A−</strong> arriba para cambiar el tamaño de la letra.</p></div>
+        <div class="instr"><span class="ico">🔠</span><p>${esMovil() ? 'Toca <strong>⚙️</strong> arriba para agrandar la letra y cambiar los colores.' : 'Usa <strong>A+</strong> y <strong>A−</strong> arriba para cambiar el tamaño de la letra.'}</p></div>
         <div class="instr"><span class="ico">🐢</span><p>Ve a tu ritmo. <strong>Una lección por día</strong> está perfecto.</p></div>
       </div>
 
@@ -223,8 +274,27 @@
         <a class="extra" href="#/diccionario"><span class="ico">📖</span><strong>Diccionario</strong><span>Palabras nuevas explicadas fácil</span></a>
         <a class="extra" href="#/guia"><span class="ico">🤝</span><strong>Guía del acompañante</strong><span>Para quien te ayuda a aprender</span></a>
       </div>
+
+      <section class="bloque cambiar-dispositivo no-leer" style="margin-top:2rem">
+        <p>${esMovil() ? '📱 Estás viendo la versión para <strong>teléfono</strong>.' : '💻 Estás viendo la versión para <strong>computadora</strong>.'}</p>
+        <button class="boton secundario" id="btn-dispositivo" type="button">${esMovil() ? '💻 Ver versión computadora' : '📱 Ver versión teléfono'}</button>
+      </section>
     `;
     mejorar(main);
+    main.querySelector('.cambiar-dispositivo .escuchar')?.remove();
+    document.getElementById('btn-dispositivo').onclick = () => {
+      const quiero = esMovil() ? 'pc' : 'movil';
+      preferencia = quiero === (pareceMovil ? 'movil' : 'pc') ? 'auto' : quiero;
+      guardado.escribir('dispositivo', preferencia);
+      aplicarDispositivo(); vistaInicio();
+    };
+    const instalar = document.getElementById('btn-instalar');
+    if (instalar) instalar.onclick = async () => {
+      if (!avisoInstalar) return;
+      avisoInstalar.prompt();
+      await avisoInstalar.userChoice.catch(() => null);
+      avisoInstalar = null; instalar.hidden = true;
+    };
   }
 
   /* ---------- Pantalla: lección ---------- */
@@ -239,7 +309,7 @@
       <div class="migas"><a class="boton secundario" href="#/">← Volver al mapa</a></div>
       <header class="cabecera-leccion">
         <div class="emoji" aria-hidden="true">${l.emoji}</div>
-        <div class="nivel">Nivel ${l.nivel} · Lección ${i + 1} de ${L.length}</div>
+        <div class="nivel">Nivel ${l.nivel} · Lección ${i} de ${L.length - 1}</div>
         <h1>${l.titulo}</h1>
         <div class="meta">⏱️ ${l.minutos} minutos más o menos</div>
         <div class="acciones">
@@ -264,7 +334,7 @@
         ${i > 0 ? `<a class="boton secundario" href="#/leccion/${i - 1}">⬅️ Anterior</a>` : '<span></span>'}
         ${i < L.length - 1 ? `<a class="boton" href="#/leccion/${i + 1}">Siguiente ➡️</a>` : `<a class="boton" href="#/">🏠 Volver al mapa</a>`}
       </nav>
-      <p class="pista-teclas">💡 También puedes usar las flechas <kbd>←</kbd> <kbd>→</kbd> del teclado para cambiar de lección.</p>
+      <p class="pista-teclas solo-pc">💡 También puedes usar las flechas <kbd>←</kbd> <kbd>→</kbd> del teclado para cambiar de lección.</p>
     `;
     mejorar(main);
 
@@ -307,7 +377,7 @@
       <section class="bloque">
         <h1>📖 Diccionario</h1>
         <p>Palabras nuevas, explicadas fácil. Toca 🔊 para escucharlas todas, o busca una palabra.</p>
-        <input class="buscador no-leer" id="buscar" type="search" placeholder="🔎 Buscar palabra (puedes dictarla con Windows + H)" aria-label="Buscar palabra">
+        <input class="buscador no-leer" id="buscar" type="search" placeholder="🔎 Buscar palabra (puedes dictarla ${esMovil() ? 'con el micrófono 🎤' : 'con Windows + H'})" aria-label="Buscar palabra">
         <dl id="lista-palabras">
           ${C.diccionario.map(([p, d]) => `<div class="palabra"><dt>${p}</dt><dd>${d}</dd></div>`).join('')}
         </dl>
@@ -332,7 +402,7 @@
         <h1>Frases listas</h1>
         <p>Frases para usar con Claude. Toca <strong>🚀 Abrir en Claude</strong> o <strong>📋 Copiar</strong>.</p>
         <div class="caja truco"><span class="titulo-caja">💡 Las partes entre [corchetes]</span>
-        <p>Son para cambiarlas por lo tuyo. Cuando la frase esté en Claude, borra esa parte y di lo que quieres con <kbd>⊞ Windows</kbd> + <kbd>H</kbd>.</p></div>
+        <p>Son para cambiarlas por lo tuyo. Cuando la frase esté en Claude, borra esa parte, ${C.ayudas.DICTA} y di lo que quieres.</p></div>
       </header>
       ${C.frases.map(g => `<section class="bloque"><h2>${g.grupo}</h2>${g.lista.map(t => `<div class="prompt">${t}</div>`).join('')}</section>`).join('')}
     `;

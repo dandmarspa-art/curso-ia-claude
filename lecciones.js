@@ -16,7 +16,15 @@ const videos = (...enlaces) => `
     <div class="videos">${enlaces.join('')}</div>
   </section>`;
 
+// --- Texto distinto para computadora y teléfono ---
+// En el teléfono se muestra lo de "movil"; en la computadora, lo de "pc".
+const dos = (pc, movil) => `<span class="solo-pc">${pc}</span><span class="solo-movil">${movil}</span>`;
+const DICTA = dos('aprieta <kbd>⊞ Windows</kbd> + <kbd>H</kbd>', 'toca el <strong>micrófono 🎤</strong> del teclado');
+const PEGA = dos('pega con <kbd>Ctrl</kbd> + <kbd>V</kbd>', 'deja el dedo apretado en la caja y toca <strong>Pegar</strong>');
+const ENVIA = dos('envía con <kbd>Enter ↵</kbd>', 'envía tocando la <strong>flecha ⬆️</strong>');
+
 window.CURSO = {};
+window.CURSO.ayudas = { dos, DICTA, PEGA, ENVIA };
 
 window.CURSO.lecciones = [
 
@@ -107,9 +115,9 @@ window.CURSO.lecciones = [
   emoji: '🎙️', nivel: 10, etapa: '🌱 Primeros pasos', minutos: 25,
   titulo: 'Tu voz es tu teclado',
   aprenderas: [
-    'Escribir en la computadora hablando (dictado por voz)',
-    'Escribir en el teléfono hablando',
-    'Trucos para usar la computadora con una sola mano',
+    dos('Escribir en la computadora hablando (dictado por voz)', 'Escribir en el teléfono hablando (dictado por voz)'),
+    dos('Escribir en el teléfono hablando', 'Controlar el teléfono con la voz'),
+    dos('Trucos para usar la computadora con una sola mano', 'Trucos para usar el teléfono con una sola mano'),
   ],
   html: `
   <section class="bloque">
@@ -120,7 +128,63 @@ window.CURSO.lecciones = [
     <p>Si el dictado escribe algo mal, <strong>no importa</strong>. Claude es muy bueno entendiendo aunque haya errores. ¡No tiene que quedar perfecto!</p></div>
   </section>
 
-  <section class="bloque">
+  <section class="bloque solo-movil">
+    <h2>📱 Escribir hablando en el teléfono</h2>
+    <p>Tu teléfono ya trae un <strong>micrófono en el teclado</strong>. Con él, puedes escribir en cualquier app hablando.</p>
+    <div class="pasos"><ol>
+      <li>Toca donde quieres escribir (por ejemplo, el cuadro de abajo 👇). Aparece el teclado.</li>
+      <li>Busca el <strong>micrófono 🎤</strong> en el teclado.
+        <span class="solo-android">En Android (teclado Gboard) suele estar <strong>arriba a la derecha</strong> del teclado.</span>
+        <span class="solo-ios">En iPhone está <strong>abajo a la derecha</strong>, debajo de las letras.</span></li>
+      <li>Tócalo. Cuando el teléfono te escucha, el micrófono cambia de color o aparecen ondas.</li>
+      <li><strong>Habla tranquilo</strong>, como si le hablaras a un amigo.</li>
+      <li>Cuando termines, toca el micrófono otra vez (o espera, se apaga solo).</li>
+    </ol></div>
+    <div class="caja truco"><span class="titulo-caja">💡 Los puntos y las comas</span>
+    <p>Puedes decir <strong>"punto"</strong>, <strong>"coma"</strong> o <strong>"signo de interrogación"</strong> y el teléfono los escribe. Si se te olvida, no importa: Claude te entiende igual.</p></div>
+    <div class="caja info"><span class="titulo-caja">🌐 Si escribe en otro idioma</span>
+    <p>Revisa que el teclado esté en <strong>español</strong>. Pídele ayuda a tu acompañante si hace falta.</p></div>
+  </section>
+
+  <section class="bloque solo-movil">
+    <h2>🏋️ ¡Practica aquí!</h2>
+    <p>Toca el cuadro, toca el <strong>micrófono 🎤</strong> del teclado y di: <em>"Hola, me llamo... y me gusta el diseño gráfico."</em></p>
+    <textarea class="practica" aria-label="Cuadro para practicar el dictado" placeholder="Toca aquí y habla con el micrófono 🎤"></textarea>
+    <p style="margin-top:.8rem">¿Salió? ¡Muy bien! 🎉 ¿Salió con errores? ¡También muy bien! Practica unas veces más.</p>
+  </section>
+
+  <section class="bloque solo-movil">
+    <h2>✋ Usar el teléfono con una mano</h2>
+    <div class="solo-android">
+      <p><strong>Modo una mano:</strong> baja la pantalla para que llegues arriba con el pulgar.</p>
+      <p>Búscalo en <strong>Ajustes</strong>: escribe o dicta <em>"una mano"</em> en el buscador de Ajustes.</p>
+      <p><strong>Teclado para una mano:</strong> en Gboard, deja el dedo apretado en la tecla de la coma o en ⚙️ y elige el ícono de la mano. El teclado se hace más chico y se pega a un lado.</p>
+    </div>
+    <div class="solo-ios">
+      <p><strong>Alcance:</strong> baja la pantalla para que llegues arriba con el pulgar. Se activa en <strong>Ajustes → Accesibilidad → Tocar → Alcance</strong>. Después, desliza el dedo hacia abajo en el borde de abajo de la pantalla.</p>
+      <p><strong>Teclado para una mano:</strong> deja el dedo apretado en el globo 🌐 o el emoji 😀 del teclado y elige el teclado pegado a la izquierda.</p>
+    </div>
+    <p><strong>Letra más grande:</strong> en <strong>Ajustes</strong>, busca <em>"tamaño de fuente"</em> o <em>"tamaño del texto"</em>. Y en este curso, usa ⚙️ arriba.</p>
+  </section>
+
+  <section class="bloque solo-movil">
+    <h2>🗣️ Nivel experto: controla el teléfono con la voz</h2>
+    <p>Puedes pedirle cosas al teléfono sin tocarlo:</p>
+    <ul>
+      <li class="solo-android">🗣️ <em>"Ok Google, abre Claude."</em></li>
+      <li class="solo-ios">🗣️ <em>"Oye Siri, abre Claude."</em></li>
+    </ul>
+    <div class="solo-android"><p>Y hay una app de Google llamada <strong>Voice Access</strong> para controlar <strong>todo</strong> con la voz: <em>"toca Enviar"</em>, <em>"desplázate hacia abajo"</em>. Está en la Play Store.</p></div>
+    <div class="solo-ios"><p>Y el iPhone tiene <strong>Control por voz</strong> para manejar <strong>todo</strong> con la voz: <em>"toca Enviar"</em>, <em>"desplaza hacia abajo"</em>. Está en <strong>Ajustes → Accesibilidad → Control por voz</strong>.</p></div>
+    <div class="caja info"><p>Esto es opcional. Si te parece difícil, sáltalo por ahora. El micrófono del teclado es suficiente para todo el curso.</p></div>
+  </section>
+
+  <section class="bloque solo-movil">
+    <h2>💻 ¿Y en la computadora?</h2>
+    <p>En la computadora también puedes dictar: se usan las teclas <kbd>⊞ Windows</kbd> + <kbd>H</kbd>. Cuando abras este curso en la computadora, esta lección te lo explica paso a paso.</p>
+  </section>
+
+  <section class="bloque solo-pc">
     <h2>💻 En la computadora (Windows)</h2>
     <p>Para dictar, se usan dos teclas juntas:</p>
     <div class="teclas"><kbd>⊞ Windows</kbd> + <kbd>H</kbd></div>
@@ -137,14 +201,14 @@ window.CURSO.lecciones = [
     <p>El dictado funciona mejor con internet. Si no entiende español, pídele a tu acompañante que revise el idioma en Configuración de Windows.</p></div>
   </section>
 
-  <section class="bloque">
+  <section class="bloque solo-pc">
     <h2>🏋️ ¡Practica aquí!</h2>
     <p>Haz clic en el cuadro, aprieta <kbd>⊞ Windows</kbd> + <kbd>H</kbd> y di: <em>"Hola, me llamo... y me gusta el diseño gráfico."</em></p>
     <textarea class="practica" aria-label="Cuadro para practicar el dictado" placeholder="Haz clic aquí y habla con Windows + H 🎙️"></textarea>
     <p style="margin-top:.8rem">¿Salió? ¡Muy bien! 🎉 ¿Salió con errores? ¡También muy bien! Practica unas veces más.</p>
   </section>
 
-  <section class="bloque">
+  <section class="bloque solo-pc">
     <h2>✋ Trucos para usar una sola mano</h2>
     <p><strong>Teclas especiales (teclas pegajosas):</strong> te dejan apretar las teclas <strong>una por una</strong> en vez de juntas.</p>
     <div class="pasos"><ol>
@@ -160,7 +224,7 @@ window.CURSO.lecciones = [
     </ul>
   </section>
 
-  <section class="bloque">
+  <section class="bloque solo-pc">
     <h2>🗣️ Nivel experto: controla la computadora con la voz</h2>
     <p>Windows 11 tiene algo llamado <strong>"Acceso por voz"</strong>. Con eso puedes decir cosas como <em>"abrir Edge"</em> o <em>"haz clic en Enviar"</em> y la computadora lo hace.</p>
     <div class="pasos"><ol>
@@ -171,7 +235,7 @@ window.CURSO.lecciones = [
     <div class="caja info"><p>Esto es opcional. Si te parece difícil, sáltalo por ahora. El dictado con <kbd>⊞</kbd> + <kbd>H</kbd> es suficiente para todo el curso.</p></div>
   </section>
 
-  <section class="bloque">
+  <section class="bloque solo-pc">
     <h2>📱 En el teléfono</h2>
     <p>¡En el teléfono es todavía más fácil!</p>
     <div class="pasos"><ol>
@@ -188,7 +252,7 @@ window.CURSO.lecciones = [
       <li>🤫 Busca un lugar tranquilo, sin mucho ruido.</li>
       <li>🐢 Habla a velocidad normal, sin gritar.</li>
       <li>🎧 Unos audífonos con micrófono ayudan mucho.</li>
-      <li>😌 Si se equivoca, respira. No pasa nada. Puedes borrar con <kbd>⌫ Retroceso</kbd> o simplemente seguir.</li>
+      <li>😌 Si se equivoca, respira. No pasa nada. Puedes borrar con ${dos('<kbd>⌫ Retroceso</kbd>', 'la tecla de borrar ⌫')} o simplemente seguir.</li>
     </ul>
   </section>
 
@@ -201,10 +265,10 @@ window.CURSO.lecciones = [
   )}
   `,
   mision: [
-    'Escribí una frase hablando, con Windows + H',
-    'Activé la puntuación automática',
-    'Probé el micrófono del teclado de mi teléfono',
-    '(Opcional) Activé las teclas especiales',
+    dos('Escribí una frase hablando, con Windows + H', 'Escribí una frase hablando, con el micrófono 🎤 del teclado'),
+    dos('Activé la puntuación automática', 'Dije "punto" o "coma" y el teléfono lo escribió'),
+    dos('Probé el micrófono del teclado de mi teléfono', 'Probé el modo una mano (o el teclado para una mano)'),
+    dos('(Opcional) Activé las teclas especiales', '(Opcional) Abrí una app diciendo "Ok Google" u "Oye Siri"'),
   ],
 },
 
@@ -228,8 +292,10 @@ window.CURSO.lecciones = [
 
   <section class="bloque">
     <h2>📝 Crear tu cuenta</h2>
+    <div class="caja truco solo-movil"><span class="titulo-caja">📱 En el teléfono es más fácil con la app</span>
+    <p>Primero instala la app de Claude (mira el cuadro <strong>"Claude en tu teléfono"</strong> más abajo). Después ábrela y sigue estos mismos pasos desde el paso 3.</p></div>
     <div class="pasos"><ol>
-      <li>Abre el navegador (Chrome o Edge).</li>
+      <li>Abre el navegador (${dos('Chrome o Edge', 'Chrome o Safari')}).</li>
       <li>Ve a la página <strong>claude.ai</strong> (o toca el botón de abajo).</li>
       <li>Toca <strong>"Continuar con Google"</strong>. Es lo más fácil: <strong>no tienes que escribir contraseñas</strong>.</li>
       <li>Elige tu cuenta de Google (tu Gmail).</li>
@@ -246,10 +312,11 @@ window.CURSO.lecciones = [
     <p>Cuando entras, vas a ver estas partes. (Puede verse un poquito distinto, porque Claude cambia a veces.)</p>
     <ul>
       <li>📝 <strong>La caja de texto</strong> (abajo o al centro): ahí va tu mensaje. Dice algo como <em>"¿Cómo puedo ayudarte?"</em></li>
-      <li>⬆️ <strong>El botón enviar</strong>: una flecha. También puedes apretar <kbd>Enter ↵</kbd>.</li>
+      <li>⬆️ <strong>El botón enviar</strong>: una flecha.${dos(' También puedes apretar <kbd>Enter ↵</kbd>.', '')}</li>
       <li>➕ <strong>El botón más</strong>: para subir fotos y archivos.</li>
       <li>🎤 <strong>El micrófono</strong> (si aparece): para dictar directo en Claude.</li>
-      <li>📚 <strong>La barra de la izquierda</strong>: tus conversaciones anteriores. Si no la ves, busca un ícono de menú ☰.</li>
+      <li class="solo-movil">〰️ <strong>Las ondas de sonido</strong> (en la app): para <strong>conversar hablando</strong>. Lo vemos en la lección 8.</li>
+      <li>📚 ${dos('<strong>La barra de la izquierda</strong>: tus conversaciones anteriores. Si no la ves, busca un ícono de menú ☰.', '<strong>El menú ☰</strong> (arriba a la izquierda): ahí están tus conversaciones anteriores.')}</li>
       <li>✏️ <strong>"Nuevo chat"</strong>: empezar una conversación nueva.</li>
     </ul>
   </section>
@@ -263,7 +330,7 @@ window.CURSO.lecciones = [
     </ul>
     <p>Para instalar la app, ve a <strong>claude.ai/download</strong>, descarga la versión de Windows y ábrela.</p>
     <p><a class="boton secundario" href="https://claude.ai/download" target="_blank" rel="noopener">⬇️ Descargar Claude para Windows</a></p>
-    <div class="caja truco"><span class="titulo-caja">💡 Guarda claude.ai en favoritos</span>
+    <div class="caja truco solo-pc"><span class="titulo-caja">💡 Guarda claude.ai en favoritos</span>
     <p>En el navegador, cuando estés en claude.ai, aprieta la estrellita ☆ arriba a la derecha. Así lo encuentras rápido.</p></div>
   </section>
 
@@ -289,7 +356,7 @@ window.CURSO.lecciones = [
   `,
   mision: [
     'Creé mi cuenta en claude.ai',
-    'Guardé claude.ai en favoritos',
+    dos('Guardé claude.ai en favoritos', 'Puse la app de Claude en mi pantalla de inicio, fácil de alcanzar'),
     'Instalé la app de Claude en mi teléfono',
     'Encontré la caja de texto, el botón enviar y el botón ➕',
   ],
@@ -310,24 +377,24 @@ window.CURSO.lecciones = [
     <p>En este curso vas a ver cuadros como el de abajo, con un borde de rayitas. Son <strong>frases para decirle a Claude</strong>.</p>
     <p>Tienen dos botones:</p>
     <ul>
-      <li>🚀 <strong>Abrir en Claude</strong>: abre Claude con la frase <strong>ya escrita</strong>. Solo tienes que apretar <kbd>Enter ↵</kbd>.</li>
-      <li>📋 <strong>Copiar</strong>: copia la frase. Después vas a Claude y la pegas con <kbd>Ctrl</kbd> + <kbd>V</kbd>.</li>
+      <li>🚀 <strong>Abrir en Claude</strong>: abre Claude con la frase <strong>ya escrita</strong>. Solo tienes que enviarla${dos(' con <kbd>Enter ↵</kbd>', ' con la <strong>flecha ⬆️</strong>')}.</li>
+      <li>📋 <strong>Copiar</strong>: copia la frase. Después vas a Claude y ${PEGA}.</li>
     </ul>
     <p>Así <strong>no tienes que escribir nada</strong>. ¡Pruébalo!</p>
     ${pr('Hola Claude. Es mi primera vez usando inteligencia artificial. ¿Puedes contarme, con palabras muy sencillas, 5 cosas que puedes hacer para ayudarme?')}
     <div class="caja truco"><span class="titulo-caja">💡 Si la frase no aparece escrita</span>
-    <p>A veces Claude abre vacío. No pasa nada: usa el botón <strong>📋 Copiar</strong> y pega con <kbd>Ctrl</kbd> + <kbd>V</kbd>.</p></div>
+    <p>A veces Claude abre vacío${dos('', ' (pasa mucho cuando se abre la app)')}. No pasa nada: la frase ya quedó copiada. Solo ${PEGA}.</p></div>
   </section>
 
   <section class="bloque">
     <h2>🎙️ Ahora con tu voz</h2>
     <p>Los botones son una ayuda, pero lo mejor es <strong>hablar con tus propias palabras</strong>.</p>
     <div class="pasos"><ol>
-      <li>Abre Claude y toca <strong>"Nuevo chat"</strong>.</li>
-      <li>Haz clic en la caja de texto.</li>
-      <li>Aprieta <kbd>⊞ Windows</kbd> + <kbd>H</kbd>.</li>
+      <li>Abre Claude y toca <strong>"Nuevo chat"</strong>${dos('', ' (el lápiz ✏️ o el ➕ de arriba)')}.</li>
+      <li>${dos('Haz clic', 'Toca')} en la caja de texto.</li>
+      <li>${DICTA}.</li>
       <li>Habla. Por ejemplo: <em>"Hola Claude, me gusta el diseño gráfico. ¿Qué cosas bonitas puedo aprender a hacer contigo?"</em></li>
-      <li>Aprieta <kbd>Enter ↵</kbd> para enviar.</li>
+      <li>Revisa que se escribió y ${ENVIA}.</li>
       <li>Espera un poquito. Claude escribe su respuesta. 📝</li>
       <li>Lee la respuesta con calma. Si es muy larga, dile: <em>"Hazlo más corto."</em></li>
     </ol></div>
@@ -361,7 +428,7 @@ window.CURSO.lecciones = [
       <li>🆕 <strong>Nuevo chat</strong>: si cambias de tema. Así Claude no se confunde.</li>
     </ul>
     <div class="caja truco"><span class="titulo-caja">💡 Más botones útiles</span>
-    <p>Debajo de cada respuesta hay botoncitos. Uno sirve para <strong>copiar</strong> la respuesta 📋 y otro para <strong>pedir otra respuesta distinta</strong> 🔄. Si no te gusta lo que dijo, ¡pide otra!</p></div>
+    <p>Debajo de cada respuesta hay botoncitos${dos('', ' (en la app, a veces aparecen si dejas el dedo apretado sobre la respuesta)')}. Uno sirve para <strong>copiar</strong> la respuesta 📋 y otro para <strong>pedir otra respuesta distinta</strong> 🔄. Si no te gusta lo que dijo, ¡pide otra!</p></div>
   </section>
 
   ${videos(
@@ -371,7 +438,7 @@ window.CURSO.lecciones = [
   `,
   mision: [
     'Usé el botón 🚀 "Abrir en Claude"',
-    'Mandé un mensaje a Claude hablando con Windows + H',
+    dos('Mandé un mensaje a Claude hablando con Windows + H', 'Mandé un mensaje a Claude hablando con el micrófono 🎤'),
     'Le conté a Claude sobre mí',
     'Le pedí a Claude que me explicara algo más fácil',
     'Empecé un chat nuevo',
@@ -478,23 +545,34 @@ window.CURSO.lecciones = [
     <p>Puedes mostrarle una foto a Claude y preguntarle cosas sobre ella. ¡Es muy útil para el diseño!</p>
     <div class="pasos"><ol>
       <li>En Claude, toca el botón <strong>➕</strong> (al lado de la caja de texto).</li>
-      <li>Elige <strong>subir archivo</strong> o <strong>foto</strong>.</li>
-      <li>Busca la imagen en tu computadora y elígela.</li>
+      <li>Elige ${dos('<strong>subir archivo</strong> o <strong>foto</strong>', '<strong>Fotos</strong> (o <strong>Galería</strong>) para elegir una imagen, o la <strong>cámara 📷</strong> para sacar una foto ahora')}.</li>
+      <li>${dos('Busca la imagen en tu computadora y elígela.', 'Toca la imagen que quieres.')}</li>
       <li>Di lo que quieres saber, por ejemplo: <em>"¿Qué colores tiene esta imagen?"</em></li>
-      <li>Envía con <kbd>Enter ↵</kbd>.</li>
+      <li>${ENVIA.replace('envía', 'Envía').replace('envía', 'Envía')}.</li>
     </ol></div>
-    <div class="caja truco"><span class="titulo-caja">💡 Más fácil: arrastra</span>
+    <div class="caja truco solo-pc"><span class="titulo-caja">💡 Más fácil: arrastra</span>
     <p>También puedes <strong>arrastrar</strong> una imagen con el mouse y soltarla encima de la caja de Claude.</p></div>
-    <div class="caja truco"><span class="titulo-caja">📱 En el teléfono</span>
+    <div class="caja truco solo-pc"><span class="titulo-caja">📱 En el teléfono</span>
     <p>En la app, toca ➕ y luego la <strong>cámara 📷</strong>. Saca una foto de lo que quieras y pregúntale a Claude. ¡Una planta, un cartel, un dibujo tuyo!</p></div>
   </section>
 
   <section class="bloque">
     <h2>✂️ Capturas de pantalla</h2>
     <p>Una <strong>captura</strong> es una foto de lo que ves en tu pantalla. Sirve para mostrarle a Claude algo que estás viendo.</p>
-    <div class="teclas"><kbd>⊞ Windows</kbd> + <kbd>Shift ⇧</kbd> + <kbd>S</kbd></div>
-    <ol>
-      <li>Aprieta esas teclas (con las teclas especiales de la lección 1, puedes apretarlas una por una).</li>
+    <div class="solo-movil">
+      <div class="solo-android">
+        <p><strong>Con los botones:</strong> aprieta <strong>encendido + bajar volumen</strong> al mismo tiempo.</p>
+        <p><strong>✋ Con una mano (más fácil):</strong> di <em>"Ok Google, haz una captura de pantalla"</em>. Muchos teléfonos también dejan hacerla <strong>deslizando 3 dedos hacia abajo</strong> (búscalo en Ajustes como <em>"captura"</em>).</p>
+      </div>
+      <div class="solo-ios">
+        <p><strong>Con los botones:</strong> aprieta <strong>botón lateral + subir volumen</strong> al mismo tiempo.</p>
+        <p><strong>✋ Con una mano (más fácil):</strong> activa <strong>"Tocar atrás"</strong>: <strong>Ajustes → Accesibilidad → Tocar → Tocar atrás → Doble toque → Captura de pantalla</strong>. ¡Después solo das dos golpecitos en la parte de atrás del teléfono!</p>
+      </div>
+      <p>Después, en Claude toca <strong>➕</strong> → <strong>Fotos</strong> y elige la captura. Es la última foto.</p>
+    </div>
+    <div class="teclas solo-pc"><kbd>⊞ Windows</kbd> + <kbd>Shift ⇧</kbd> + <kbd>S</kbd></div>
+    <ol class="solo-pc">
+      <li>Aprieta esas teclas (con las teclas especiales de la lección 1 puedes apretarlas una por una).</li>
       <li>La pantalla se pone oscura. Arrastra el mouse para elegir lo que quieres capturar.</li>
       <li>Ve a Claude y pega con <kbd>Ctrl</kbd> + <kbd>V</kbd>. ¡La imagen aparece!</li>
     </ol>
@@ -545,7 +623,7 @@ window.CURSO.lecciones = [
   `,
   mision: [
     'Le mostré una foto a Claude y le pregunté algo',
-    'Hice una captura de pantalla y la pegué en Claude',
+    dos('Hice una captura de pantalla y la pegué en Claude', 'Hice una captura de pantalla y se la mostré a Claude'),
     'Le pedí a Claude que me resumiera un documento',
     'Le pedí a Claude que buscara algo en internet',
   ],
@@ -580,6 +658,8 @@ window.CURSO.lecciones = [
     <h2>🎮 Prueba: crea un juego</h2>
     ${pr('Crea un juego de memoria sencillo con 8 pares de cartas. Cada carta tiene un color bonito. Que las cartas sean grandes y fáciles de tocar. Cuando gane, que aparezca un mensaje de felicitaciones.')}
     <p>Espera un poquito... ¡y juega! 🎉 Si no ves el juego, busca un botón que diga <strong>"Vista previa"</strong> o <strong>"Preview"</strong>.</p>
+    <div class="caja info solo-movil"><span class="titulo-caja">📱 En el teléfono</span>
+    <p>El artefacto aparece como una <strong>tarjeta</strong> dentro del chat. Tócala y se abre en <strong>pantalla completa</strong>. Para volver al chat, toca la flecha ← o la ✕ de arriba.</p></div>
   </section>
 
   <section class="bloque">
@@ -679,7 +759,7 @@ window.CURSO.lecciones = [
     ${pr('Quiero un logo para una tienda de plantas que se llama "Hoja Verde". Hazme 4 propuestas diferentes en SVG, simples y modernas, una al lado de la otra en un artefacto. Explícame la idea de cada una.')}
     <p>Después puedes decir: <em>"Me gusta la 3. Hazla más redondeada y prueba con un verde más oscuro."</em></p>
     <div class="caja truco"><span class="titulo-caja">💡 Usar el logo en otros programas</span>
-    <p>Descarga el SVG y ábrelo en <strong>Canva</strong>, <strong>Inkscape</strong> (gratis) o <strong>Figma</strong> (tiene versión gratis) para seguir editándolo.</p></div>
+    <p>${dos('Descarga el SVG y ábrelo en <strong>Canva</strong>, <strong>Inkscape</strong> (gratis) o <strong>Figma</strong> (tiene versión gratis) para seguir editándolo.', 'Descarga el SVG y súbelo a la app de <strong>Canva</strong> (gratis) para seguir editándolo. Para editar logos con más detalle, es mejor la computadora.')}</p></div>
   </section>
 
   <section class="bloque">
@@ -775,7 +855,7 @@ window.CURSO.lecciones = [
     <h2>⚙️ Tus preferencias: díselo una sola vez</h2>
     <p>¿Te acuerdas de la frase de la lección 3 donde le contabas a Claude sobre ti? Puedes <strong>guardarla</strong> para que Claude la sepa <strong>en todos los chats</strong>.</p>
     <div class="pasos"><ol>
-      <li>En Claude, toca tu <strong>nombre o tu inicial</strong> (abajo a la izquierda).</li>
+      <li>${dos('En Claude, toca tu <strong>nombre o tu inicial</strong> (abajo a la izquierda).', 'En la app, abre el <strong>menú ☰</strong> y toca tu <strong>nombre o tu inicial</strong>.')}</li>
       <li>Entra a <strong>Configuración</strong> (o "Ajustes").</li>
       <li>Busca la parte que pregunta qué <strong>preferencias personales</strong> debe tener en cuenta Claude.</li>
       <li>Pega o dicta tu texto. Por ejemplo, el de abajo 👇.</li>
@@ -803,7 +883,7 @@ window.CURSO.lecciones = [
     <p><strong>Ejemplo:</strong> un proyecto llamado <em>"Mi escuela de diseño"</em> con estas instrucciones:</p>
     ${pr('En este proyecto eres mi profesor de diseño gráfico. Soy principiante. Explica con palabras sencillas y ejemplos visuales. Al final de cada respuesta, propónme un ejercicio pequeño para practicar.')}
     <div class="pasos"><ol>
-      <li>En la barra de la izquierda, busca <strong>"Proyectos"</strong>.</li>
+      <li>${dos('En la barra de la izquierda', 'En el menú ☰')}, busca <strong>"Proyectos"</strong>.</li>
       <li>Toca <strong>"Crear proyecto"</strong> o <strong>"Nuevo proyecto"</strong>.</li>
       <li>Ponle un nombre (¡díctalo!).</li>
       <li>Busca <strong>"Instrucciones"</strong> y pega el texto de arriba.</li>
@@ -828,13 +908,14 @@ window.CURSO.lecciones = [
     </ol></div>
     <div class="caja truco"><span class="titulo-caja">💡 Ideal para practicar</span>
     <p>Puedes usar el modo voz mientras caminas o descansas. Por ejemplo: <em>"Hazme un quiz de 5 preguntas sobre los colores primarios y secundarios."</em></p></div>
-    <div class="caja info"><p>En la computadora también puede haber un micrófono 🎤 en la caja de Claude para dictar directo. Si lo ves, ¡úsalo en vez de Windows + H!</p></div>
+    <div class="caja info solo-pc"><p>En la computadora también puede haber un micrófono 🎤 en la caja de Claude para dictar directo. Si lo ves, ¡úsalo en vez de Windows + H!</p></div>
+    <div class="caja bien solo-movil"><span class="titulo-caja">📱 ¡Estás en el lugar perfecto!</span><p>Como estás en el teléfono, puedes probarlo ahora mismo. Es la forma más cómoda de usar Claude sin escribir nada.</p></div>
   </section>
 
   <section class="bloque">
     <h2>🔍 Encontrar chats viejos</h2>
     <ul>
-      <li>🔎 Usa la <strong>búsqueda</strong> en la barra de la izquierda.</li>
+      <li>🔎 Usa la <strong>búsqueda</strong> ${dos('en la barra de la izquierda', 'dentro del menú ☰')}.</li>
       <li>⭐ Marca con <strong>estrella</strong> los chats importantes para tenerlos arriba.</li>
       <li>✏️ <strong>Cambia el nombre</strong> a un chat para encontrarlo fácil.</li>
     </ul>
@@ -1053,7 +1134,7 @@ window.CURSO.lecciones = [
 
   <section class="bloque zona-diploma">
     <h2>🎓 ¡Tu diploma!</h2>
-    <p>Haz clic en el cuadro, aprieta <kbd>⊞ Windows</kbd> + <kbd>H</kbd> y <strong>dicta tu nombre</strong>. ¡Es tu último ejercicio de voz!</p>
+    <p>${dos('Haz clic', 'Toca')} el cuadro, ${DICTA} y <strong>dicta tu nombre</strong>. ¡Es tu último ejercicio de voz!</p>
     <input class="buscador no-imprimir" id="nombre-diploma" type="text" placeholder="Tu nombre aquí 🎙️" aria-label="Tu nombre para el diploma">
     <div class="diploma" id="diploma">
       <div class="sello">🏆</div>
@@ -1065,6 +1146,7 @@ window.CURSO.lecciones = [
       <p class="fecha" id="diploma-fecha"></p>
     </div>
     <button class="boton no-imprimir" id="imprimir-diploma">🖨️ Imprimir o guardar diploma</button>
+    <p class="solo-movil no-imprimir" style="margin-top:.8rem">📱 En el teléfono, elige <strong>"Guardar como PDF"</strong> para guardarlo, o <strong>"Compartir"</strong> para mandarlo por WhatsApp.</p>
   </section>
   `,
   mision: [
@@ -1096,7 +1178,8 @@ window.CURSO.diccionario = [
   ['Tipografía', 'El tipo de letra y cómo se usa en un diseño.'],
   ['Google Fonts', 'Una página con cientos de tipos de letra gratis.'],
   ['Generador de imágenes', 'Una IA que crea imágenes a partir de una descripción. Ejemplos: Microsoft Designer, Ideogram.'],
-  ['Captura de pantalla', 'Una foto de lo que se ve en tu pantalla. En Windows: Windows + Shift + S.'],
+  ['Captura de pantalla', 'Una foto de lo que se ve en tu pantalla. En Windows: Windows + Shift + S. En el teléfono: dos botones a la vez, o pedírselo al asistente de voz.'],
+  ['Pantalla de inicio', 'La pantalla del teléfono donde están los íconos de tus apps.'],
   ['Proyecto', 'Una carpeta en Claude para un tema, con chats, archivos e instrucciones.'],
   ['Preferencias personales', 'Lo que le cuentas a Claude sobre ti una sola vez, para que lo tenga en cuenta siempre.'],
   ['Memoria', 'Cuando Claude recuerda cosas de conversaciones anteriores.'],
@@ -1174,6 +1257,21 @@ window.CURSO.guia = `
   </section>
 
   <section class="bloque">
+    <h2>📱 Preparar el teléfono (checklist)</h2>
+    <p>El curso <strong>detecta solo</strong> si se abre en un teléfono y cambia las instrucciones (micrófono del teclado en vez de Windows + H, capturas, menús de la app). Si se equivoca, en la portada del curso hay un botón para cambiar entre <strong>📱 Teléfono</strong> y <strong>💻 Computadora</strong>.</p>
+    <ul class="checklist" data-clave="guia-movil">
+      <li><label><input type="checkbox"><span>Abrir el curso en el teléfono y ponerlo en la <strong>pantalla de inicio</strong> (la portada del curso explica cómo). Así se abre como una app y funciona sin internet.</span></label></li>
+      <li><label><input type="checkbox"><span>Instalar la <strong>app oficial de Claude</strong> (de Anthropic) y entrar con la misma cuenta de la computadora.</span></label></li>
+      <li><label><input type="checkbox"><span>Revisar que el <strong>teclado esté en español</strong> y que el <strong>micrófono del teclado</strong> funcione.</span></label></li>
+      <li><label><input type="checkbox"><span>Activar el <strong>modo una mano</strong> (Android) o <strong>Alcance</strong> (iPhone), y agrandar la letra del teléfono si hace falta.</span></label></li>
+      <li><label><input type="checkbox"><span>iPhone: activar <strong>"Tocar atrás" → Captura de pantalla</strong> (Ajustes → Accesibilidad → Tocar). Android: probar <em>"Ok Google, haz una captura de pantalla"</em>.</span></label></li>
+      <li><label><input type="checkbox"><span>Opcional: <strong>Voice Access</strong> (Android) o <strong>Control por voz</strong> (iPhone) para manejar todo con la voz.</span></label></li>
+      <li><label><input type="checkbox"><span>Probar el <strong>modo voz</strong> de la app de Claude (el botón con ondas 〰️).</span></label></li>
+    </ul>
+    <div class="caja info"><p>💡 El progreso (las ⭐) se guarda <strong>en cada aparato por separado</strong>: lo que marque en el teléfono no aparece en la computadora.</p></div>
+  </section>
+
+  <section class="bloque">
     <h2>🧭 Cómo enseñar este curso</h2>
     <ul>
       <li>⏱️ <strong>Una lección por sesión</strong>, de 20 a 40 minutos. No más. Las lecciones 1, 6 y 7 pueden dividirse en dos días.</li>
@@ -1209,7 +1307,8 @@ window.CURSO.guia = `
       <li><strong>El dictado no escribe nada:</strong> revisar el micrófono, el idioma de Windows y la conexión a internet.</li>
       <li><strong>Claude dice que se acabaron los mensajes:</strong> es el límite del plan gratis. Esperar unas horas.</li>
       <li><strong>El botón "Abrir en Claude" abre vacío:</strong> usar "Copiar" y pegar con Ctrl + V.</li>
-      <li><strong>El botón 🔊 no habla:</strong> probar en Microsoft Edge (tiene muy buenas voces en español) o revisar el volumen.</li>
+      <li><strong>El botón 🔊 no habla:</strong> probar en Microsoft Edge (tiene muy buenas voces en español) o revisar el volumen. En el teléfono: quitar el modo silencio y revisar que haya una voz en español instalada (Ajustes → "texto a voz" o "contenido hablado").</li>
+      <li><strong>En el teléfono, "Abrir en Claude" abre la app sin la frase:</strong> es normal; la frase ya quedó copiada, solo hay que pegarla.</li>
       <li><strong>Algo de Claude se ve distinto al curso:</strong> Claude se actualiza seguido. Pregúntenle a Claude dónde está esa opción.</li>
     </ul>
   </section>
@@ -1225,6 +1324,16 @@ window.CURSO.guia = `
       <tr><td>⌨️ Teclas una por una</td><td><kbd>Shift ⇧</kbd> 5 veces → Sí</td></tr>
       <tr><td>🧡 Abrir Claude</td><td>claude.ai</td></tr>
       <tr><td>🤔 No entendí</td><td>Decirle a Claude: <em>"Explícamelo más fácil"</em></td></tr>
+    </table></div>
+    <h3>📱 En el teléfono</h3>
+    <div class="tabla-scroll"><table class="tabla">
+      <tr><th>Quiero...</th><th>Hago...</th></tr>
+      <tr><td>🎙️ Escribir hablando</td><td>Tocar el micrófono 🎤 del teclado</td></tr>
+      <tr><td>🗣️ Conversar hablando con Claude</td><td>En la app de Claude, tocar las ondas 〰️</td></tr>
+      <tr><td>📨 Enviar el mensaje</td><td>Tocar la flecha ⬆️</td></tr>
+      <tr><td>📋 Pegar</td><td>Dejar el dedo apretado en la caja → Pegar</td></tr>
+      <tr><td>📸 Mostrar una foto</td><td>➕ → Cámara o Fotos</td></tr>
+      <tr><td>🚀 Abrir Claude sin tocar</td><td><em>"Ok Google / Oye Siri, abre Claude"</em></td></tr>
     </table></div>
     <button class="boton secundario no-imprimir" onclick="window.print()">🖨️ Imprimir esta página</button>
   </section>

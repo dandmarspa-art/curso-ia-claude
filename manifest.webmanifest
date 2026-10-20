@@ -1,0 +1,14 @@
+{
+  "name": "Aprende IA con Claude",
+  "short_name": "Curso IA",
+  "description": "Curso de inteligencia artificial desde cero, en español y usando la voz.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fffaf3",
+  "theme_color": "#c4572e",
+  "icons": [
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
