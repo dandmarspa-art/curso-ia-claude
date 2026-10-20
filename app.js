@@ -150,12 +150,29 @@
   }
   const tieneAudio = (t) => vozElegida !== 'aparato' && (AUDIOS[vozElegida] || []).includes(huella(t));
   const reproductor = new Audio();
-  let turno = 0; // cambia cada vez que se detiene la voz, para cortar lo que estaba sonando
+  let turno = 0; // cambia cada vez que se corta la voz, para ignorar lo que estaba sonando
+  // Lo que se está leyendo: partes [{texto, el}], parte actual (i), modo ('audio' grabado o 'voz' del aparato),
+  // frases y frase actual (solo voz del aparato), si está en pausa, y la barra de controles.
+  let lectura = null;
+  const sinMovimiento = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const formatoTiempo = (s) => {
+    s = Math.max(0, Math.floor(isFinite(s) ? s : 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  };
 
-  function callar() {
+  function cortarSonido() {
     turno++;
     reproductor.pause();
     if (hayVoz) speechSynthesis.cancel();
+  }
+
+  function callar() {
+    cortarSonido();
+    if (lectura) {
+      if (lectura.barra) lectura.barra.remove();
+      lectura.partes.forEach(p => p.el && p.el.classList.remove('leyendo'));
+      lectura = null;
+    }
     if (botonHablando) {
       botonHablando.classList.remove('hablando');
       botonHablando.textContent = botonHablando.dataset.original;
@@ -164,39 +181,14 @@
     }
     botonHablando = null;
   }
-  function tocarAudio(texto) {
-    return new Promise((listo) => {
-      reproductor.src = 'audio/' + vozElegida + '/' + huella(texto) + '.mp3';
-      reproductor.playbackRate = RITMO_AUDIO[velocidad];
-      reproductor.onended = () => listo(true);
-      reproductor.onerror = () => listo(false);
-      reproductor.play().catch(() => listo(false));
-    });
-  }
-  function decirConVozDelAparato(texto, mio) {
-    return new Promise((listo) => {
-      if (!hayVoz) { alertaSuave('Tu navegador no puede leer en voz alta. Prueba con Microsoft Edge o Google Chrome.'); return listo(); }
-      // Partimos el texto en frases: los navegadores cortan textos muy largos
-      const frases = texto.split(/(?<=[.!?:;])\s+|\n+/).map(f => f.trim()).filter(Boolean);
-      if (!frases.length) return listo();
-      cargarVoces();
-      const voz = elegirVoz();
-      frases.forEach((f, i) => {
-        const u = new SpeechSynthesisUtterance(f);
-        u.lang = voz ? voz.lang : 'es-MX';
-        if (voz) u.voice = voz;
-        u.rate = RITMO_APARATO[velocidad];
-        if (i === frases.length - 1) { u.onend = () => listo(); u.onerror = () => listo(); }
-        if (turno === mio) speechSynthesis.speak(u);
-      });
-    });
-  }
-  // partes: un texto o una lista de textos que se leen uno tras otro
-  async function hablar(partes, boton) {
+  // partes: un texto, o una lista de {texto, el} que se leen uno tras otro.
+  // Si una parte tiene "el" (su cuadro), ahí aparece la barra de controles.
+  function hablar(partes, boton) {
     const mismo = boton && boton === botonHablando;
     callar();
     if (mismo) return; // segundo toque = detener
-    const mio = turno;
+    partes = [].concat(partes).map(p => typeof p === 'string' ? { texto: p } : p).filter(p => p.texto);
+    if (!partes.length) return;
     botonHablando = boton || null;
     if (boton) {
       boton.dataset.original = boton.textContent;
@@ -204,14 +196,194 @@
       boton.textContent = boton.classList.contains('escuchar') ? '⏹' : '⏹ Detener lectura';
       boton.setAttribute('aria-label', 'Detener');
     }
-    for (const parte of [].concat(partes)) {
-      if (turno !== mio) return;
-      const sono = tieneAudio(parte) && await tocarAudio(parte);
-      if (turno !== mio) return;
-      if (!sono) await decirConVozDelAparato(parte, mio);
-    }
-    if (turno === mio) callar();
+    lectura = { partes, i: 0, modo: null, frases: [], f: 0, pausado: false, arrastrando: false, barra: null };
+    if (partes.some(p => p.el)) lectura.barra = crearBarra(partes.length > 1);
+    tocarParte(0);
   }
+
+  function tocarParte(i) {
+    const l = lectura;
+    if (!l) return;
+    if (i >= l.partes.length) { callar(); return; }
+    cortarSonido();
+    l.partes.forEach(p => p.el && p.el.classList.remove('leyendo'));
+    l.i = i; l.pausado = false; l.f = 0;
+    const parte = l.partes[i];
+    if (l.barra && parte.el) {
+      const ancla = parte.el.querySelector(':scope > h1, :scope > h2');
+      if (ancla) ancla.after(l.barra); else parte.el.prepend(l.barra);
+      if (l.partes.length > 1) {
+        parte.el.classList.add('leyendo');
+        if (i > 0) parte.el.scrollIntoView({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' });
+      }
+    }
+    if (tieneAudio(parte.texto)) {
+      l.modo = 'audio';
+      const mio = turno;
+      reproductor.src = 'audio/' + vozElegida + '/' + huella(parte.texto) + '.mp3';
+      reproductor.playbackRate = RITMO_AUDIO[velocidad];
+      reproductor.onended = () => { if (turno === mio && lectura === l) tocarParte(l.i + 1); };
+      reproductor.onerror = () => { if (turno === mio && lectura === l) empezarVoz(parte.texto); };
+      reproductor.play().catch(() => { if (turno === mio && lectura === l && !l.pausado) empezarVoz(parte.texto); });
+    } else {
+      empezarVoz(parte.texto);
+    }
+    pintarBarra();
+  }
+
+  // Voz del aparato: se lee frase por frase, así se puede pausar, avanzar y retroceder
+  function empezarVoz(texto) {
+    const l = lectura;
+    l.modo = 'voz';
+    if (!hayVoz) {
+      alertaSuave('😕 Este aparato no puede leer en voz alta. Elige 👩 Daniela o 👨 David en los ajustes.');
+      callar(); return;
+    }
+    l.frases = texto.split(/(?<=[.!?:;])\s+/).map(f => f.trim()).filter(Boolean);
+    l.f = 0;
+    decirFrase();
+  }
+  function decirFrase() {
+    const l = lectura;
+    if (!l) return;
+    if (l.f >= l.frases.length) { tocarParte(l.i + 1); return; }
+    cortarSonido();
+    const mio = turno;
+    cargarVoces();
+    const voz = elegirVoz();
+    const u = new SpeechSynthesisUtterance(l.frases[l.f]);
+    u.lang = voz ? voz.lang : 'es-MX';
+    if (voz) u.voice = voz;
+    u.rate = RITMO_APARATO[velocidad];
+    u.onend = () => { if (turno === mio && lectura === l && !l.pausado) { l.f++; decirFrase(); } };
+    // Algunos navegadores se saltan lo que se pide justo después de cortar: esperamos un poquito
+    setTimeout(() => { if (turno === mio) speechSynthesis.speak(u); }, 60);
+    pintarBarra();
+  }
+
+  /* ---------- Barra de controles: atrás, pausa, adelante, avance ---------- */
+  function crearBarra(variasPartes) {
+    const b = document.createElement('div');
+    b.className = 'reproductor no-leer';
+    b.setAttribute('role', 'group');
+    b.setAttribute('aria-label', 'Controles de lectura');
+    const boton = (accion, ico, txt, titulo) =>
+      `<button type="button" data-accion="${accion}" title="${titulo}" aria-label="${titulo}"><span class="ico" aria-hidden="true">${ico}</span><span class="lbl">${txt}</span></button>`;
+    b.innerHTML = `
+      ${variasPartes ? '<div class="rep-parte" aria-live="polite"></div>' : ''}
+      <input type="range" class="rep-avance" min="0" max="1000" value="0" aria-label="Avance de la lectura">
+      <div class="rep-tiempos"><span class="rep-actual">0:00</span><span class="rep-total"></span></div>
+      <div class="rep-botones${variasPartes ? ' con-cuadros' : ''}">
+        ${boton('atras', '⏪', 'Atrás', 'Retroceder')}
+        ${boton('pausa', '⏸', 'Pausa', 'Pausar')}
+        ${boton('adelante', '⏩', 'Adelante', 'Adelantar')}
+        ${boton('detener', '⏹', 'Detener', 'Detener la lectura')}
+        ${variasPartes ? boton('anterior', '⏮', 'Cuadro anterior', 'Cuadro anterior') : ''}
+        ${variasPartes ? boton('siguiente', '⏭', 'Cuadro siguiente', 'Cuadro siguiente') : ''}
+      </div>`;
+    b.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-accion]');
+      if (!btn || !lectura) return;
+      const a = btn.dataset.accion;
+      if (a === 'pausa') pausarOSeguir();
+      else if (a === 'atras') mover(-1);
+      else if (a === 'adelante') mover(1);
+      else if (a === 'anterior') tocarParte(Math.max(0, lectura.i - 1));
+      else if (a === 'siguiente') tocarParte(lectura.i + 1);
+      else if (a === 'detener') callar();
+    });
+    const avance = b.querySelector('.rep-avance');
+    avance.addEventListener('input', () => {
+      if (!lectura) return;
+      lectura.arrastrando = true;
+      if (lectura.modo === 'audio') buscar(avance.value / 1000);
+      else pintarTiempos(avance.value / 1000);
+    });
+    avance.addEventListener('change', () => {
+      if (!lectura) return;
+      lectura.arrastrando = false;
+      buscar(avance.value / 1000);
+    });
+    return b;
+  }
+
+  function pausarOSeguir() {
+    const l = lectura;
+    if (!l) return;
+    l.pausado = !l.pausado;
+    if (l.pausado) {
+      if (l.modo === 'audio') reproductor.pause(); else cortarSonido();
+    } else {
+      if (l.modo === 'audio') reproductor.play().catch(() => {}); else decirFrase();
+    }
+    pintarBarra();
+  }
+  // Audio grabado: 10 segundos. Voz del aparato: 2 frases.
+  function mover(dir) {
+    const l = lectura;
+    if (l.modo === 'audio') {
+      const fin = isFinite(reproductor.duration) ? reproductor.duration - 0.2 : reproductor.currentTime;
+      reproductor.currentTime = Math.max(0, Math.min(fin, reproductor.currentTime + dir * 10));
+    } else {
+      l.f = Math.max(0, Math.min(l.frases.length - 1, l.f + dir * 2));
+      if (!l.pausado) decirFrase();
+    }
+    pintarBarra();
+  }
+  function buscar(fraccion) {
+    const l = lectura;
+    if (l.modo === 'audio') {
+      if (isFinite(reproductor.duration)) reproductor.currentTime = Math.min(reproductor.duration - 0.2, fraccion * reproductor.duration);
+    } else {
+      l.f = Math.min(l.frases.length - 1, Math.floor(fraccion * l.frases.length));
+      if (!l.pausado) decirFrase();
+    }
+    pintarBarra();
+  }
+
+  function pintarTiempos(fraccion) {
+    const l = lectura, b = l && l.barra;
+    if (!b) return;
+    if (l.modo === 'audio') {
+      const d = reproductor.duration;
+      b.querySelector('.rep-actual').textContent = formatoTiempo(fraccion * (isFinite(d) ? d : 0));
+      b.querySelector('.rep-total').textContent = isFinite(d) ? formatoTiempo(d) : '';
+    } else {
+      const n = l.frases.length;
+      b.querySelector('.rep-actual').textContent = 'Frase ' + Math.min(n, Math.floor(fraccion * n) + 1);
+      b.querySelector('.rep-total').textContent = 'de ' + n;
+    }
+  }
+  function pintarBarra() {
+    const l = lectura, b = l && l.barra;
+    if (!b) return;
+    const pausa = b.querySelector('[data-accion="pausa"]');
+    pausa.querySelector('.ico').textContent = l.pausado ? '▶️' : '⏸';
+    pausa.querySelector('.lbl').textContent = l.pausado ? 'Seguir' : 'Pausa';
+    pausa.title = l.pausado ? 'Seguir leyendo' : 'Pausar';
+    pausa.setAttribute('aria-label', pausa.title);
+    const parte = b.querySelector('.rep-parte');
+    if (parte) parte.textContent = 'Cuadro ' + (l.i + 1) + ' de ' + l.partes.length;
+    const ant = b.querySelector('[data-accion="anterior"]');
+    if (ant) ant.disabled = l.i === 0;
+    const sig = b.querySelector('[data-accion="siguiente"]');
+    if (sig) sig.disabled = l.i >= l.partes.length - 1;
+    if (l.arrastrando) return;
+    let fraccion = 0;
+    if (l.modo === 'audio') {
+      const d = reproductor.duration;
+      fraccion = isFinite(d) && d > 0 ? reproductor.currentTime / d : 0;
+    } else if (l.frases.length) {
+      fraccion = l.f / l.frases.length;
+    }
+    b.querySelector('.rep-avance').value = Math.round(fraccion * 1000);
+    if (l.modo === 'audio') {
+      b.querySelector('.rep-actual').textContent = formatoTiempo(reproductor.currentTime);
+      b.querySelector('.rep-total').textContent = isFinite(reproductor.duration) ? formatoTiempo(reproductor.duration) : '';
+    } else pintarTiempos(fraccion);
+  }
+  reproductor.addEventListener('timeupdate', () => { if (lectura && lectura.modo === 'audio') pintarBarra(); });
+  reproductor.addEventListener('loadedmetadata', () => { if (lectura && lectura.modo === 'audio') pintarBarra(); });
 
   const textoIntro = (l) => textoDeHtml(`<h1>${l.titulo}</h1><p>Vas a aprender:</p><ul>${l.aprenderas.map(a => `<li>${a}</li>`).join('')}</ul>`);
 
@@ -275,7 +447,7 @@
       const btn = document.createElement('button');
       btn.className = 'escuchar'; btn.type = 'button'; btn.textContent = '🔊';
       btn.setAttribute('aria-label', 'Escuchar este cuadro'); btn.title = 'Escuchar este cuadro';
-      btn.onclick = () => hablar(limpiarTexto(b), btn);
+      btn.onclick = () => hablar([{ texto: limpiarTexto(b), el: b }], btn);
       b.prepend(btn);
     });
     contenedor.querySelectorAll('.prompt').forEach(p => {
@@ -443,8 +615,8 @@
 
     const leer = document.getElementById('leer-todo');
     leer.onclick = () => {
-      const partes = [textoIntro(l)];
-      main.querySelectorAll('#cuerpo .bloque').forEach(b => partes.push(limpiarTexto(b)));
+      const partes = [{ texto: textoIntro(l), el: main.querySelector('.cabecera-leccion') }];
+      main.querySelectorAll('#cuerpo .bloque').forEach(b => partes.push({ texto: limpiarTexto(b), el: b }));
       hablar(partes, leer);
     };
 
