@@ -55,28 +55,27 @@
     if (tema === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', tema);
     document.getElementById('btn-tema').title = 'Colores: ' + nombresTema[tema];
     document.getElementById('btn-velocidad').setAttribute('aria-pressed', vozLenta ? 'true' : 'false');
-    const g = document.getElementById('btn-genero');
-    g.innerHTML = generoVoz === 'hombre' ? '👨 <span class="txt">Voz de hombre</span>' : '👩 <span class="txt">Voz de mujer</span>';
-    g.setAttribute('aria-label', generoVoz === 'hombre' ? 'Voz de hombre. Tocar para cambiar a voz de mujer' : 'Voz de mujer. Tocar para cambiar a voz de hombre');
+    document.querySelectorAll('.selector-voz button').forEach(b =>
+      b.setAttribute('aria-checked', b.dataset.genero === generoVoz ? 'true' : 'false'));
   }
   document.getElementById('btn-mas').onclick = () => { escala = Math.min(1.6, +(escala + 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-menos').onclick = () => { escala = Math.max(0.8, +(escala - 0.1).toFixed(1)); guardado.escribir('escala', escala); aplicarAjustes(); };
   document.getElementById('btn-tema').onclick = () => { tema = temas[(temas.indexOf(tema) + 1) % temas.length]; guardado.escribir('tema', tema); aplicarAjustes(); };
   document.getElementById('btn-velocidad').onclick = () => { vozLenta = !vozLenta; guardado.escribir('vozLenta', vozLenta); aplicarAjustes(); };
-  document.getElementById('btn-genero').onclick = () => {
-    generoVoz = generoVoz === 'mujer' ? 'hombre' : 'mujer';
-    guardado.escribir('generoVoz', generoVoz); aplicarAjustes();
-    if (!hayVoz) return;
-    cargarVoces();
-    const v = elegirVoz();
-    if (v && generoDe(v) === generoVoz) {
+  document.querySelectorAll('.selector-voz button').forEach(b => {
+    b.onclick = () => {
+      generoVoz = b.dataset.genero;
+      guardado.escribir('generoVoz', generoVoz); aplicarAjustes();
+      if (!hayVoz) return;
+      cargarVoces();
       hablar(generoVoz === 'hombre' ? 'Hola. Ahora te leo con voz de hombre.' : 'Hola. Ahora te leo con voz de mujer.', null);
-    } else {
-      alertaSuave(generoVoz === 'hombre'
-        ? '😕 Este aparato no tiene una voz de hombre en español. Se usará la voz que haya. (En la computadora, Microsoft Edge tiene voces de hombre y de mujer.)'
-        : '😕 Este aparato no tiene una voz de mujer en español. Se usará la voz que haya.');
-    }
-  };
+      if (vozSimulada()) {
+        alertaSuave(generoVoz === 'hombre'
+          ? '👨 Este aparato no trae una voz de hombre en español, así que uso la voz que hay, pero más grave.'
+          : '👩 Este aparato no trae una voz de mujer en español, así que uso la voz que hay, pero más aguda.', 'info');
+      }
+    };
+  });
   document.getElementById('btn-callar').onclick = () => callar();
   document.getElementById('btn-inicio').onclick = () => { location.hash = '#/'; };
   const btnAjustes = document.getElementById('btn-ajustes');
@@ -103,6 +102,17 @@
     if (HOMBRES.test(n) || HOMBRES.test(v.name)) return 'hombre';
     if (MUJERES.test(n) || MUJERES.test(v.name)) return 'mujer';
     return null;
+  }
+
+  // Si no existe una voz real del tipo elegido, la imitamos cambiando el tono
+  function vozSimulada() {
+    const v = elegirVoz();
+    // Las voces sin nombre conocido (como la de Android) casi siempre son de mujer
+    return !!v && (generoDe(v) || 'mujer') !== generoVoz;
+  }
+  function tonoVoz() {
+    if (!vozSimulada()) return 1;
+    return generoVoz === 'hombre' ? 0.65 : 1.3;
   }
 
   function elegirVoz() {
@@ -146,6 +156,7 @@
     // Partimos el texto en frases: los navegadores cortan textos muy largos
     const frases = texto.split(/(?<=[.!?:;])\s+|\n+/).map(f => f.trim()).filter(Boolean);
     const voz = elegirVoz();
+    const tono = tonoVoz();
     botonHablando = boton || null;
     if (boton) {
       boton.dataset.original = boton.textContent;
@@ -158,6 +169,7 @@
       u.lang = voz ? voz.lang : 'es-MX';
       if (voz) u.voice = voz;
       u.rate = vozLenta ? 0.75 : 0.95;
+      u.pitch = tono;
       if (i === frases.length - 1) u.onend = () => { if (botonHablando === boton) callar(); };
       speechSynthesis.speak(u);
     });
@@ -175,10 +187,10 @@
     }
   }
 
-  function alertaSuave(msj) {
+  function alertaSuave(msj, tipo) {
     const d = document.createElement('div');
-    d.className = 'caja ojo'; d.setAttribute('role', 'status'); d.textContent = msj;
-    main.prepend(d); setTimeout(() => d.remove(), 6000);
+    d.className = 'caja aviso-flotante ' + (tipo || 'ojo'); d.setAttribute('role', 'status'); d.textContent = msj;
+    document.body.appendChild(d); setTimeout(() => d.remove(), 7000);
   }
 
   /* ---------- Confeti ---------- */

@@ -30,7 +30,10 @@
       <button class="boton-barra" id="btn-mas" title="Letra más grande" aria-label="Letra más grande">A+ <span class="txt">Letra</span></button>
       <button class="boton-barra" id="btn-tema" title="Cambiar colores" aria-label="Cambiar colores">🌓 <span class="txt">Colores</span></button>
       <button class="boton-barra" id="btn-velocidad" title="Velocidad de la voz" aria-label="Velocidad de la voz">🐢 <span class="txt">Voz lenta</span></button>
-      <button class="boton-barra" id="btn-genero" title="Elegir voz de mujer o de hombre" aria-label="Cambiar a voz de hombre">👩 <span class="txt">Voz de mujer</span></button>
+      <div class="selector-voz" role="radiogroup" aria-label="Voz que lee el curso">
+        <button type="button" role="radio" data-genero="mujer" aria-checked="true" title="Leer con voz de mujer">👩 Mujer</button>
+        <button type="button" role="radio" data-genero="hombre" aria-checked="false" title="Leer con voz de hombre">👨 Hombre</button>
+      </div>
     </div>
   </header>
 
